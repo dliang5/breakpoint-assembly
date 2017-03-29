@@ -161,8 +161,8 @@ int main(int argc, char * argv[]){
             "\t" << data1.position1 << "\t" << data1.position2 << "\n" ;             
             continue ; 
         }
-
-        if( (data1.chrom_pos == chrom_region_2) /*|| (data1.chrom_pos == chrom_region_1) || (data1.chrom_pos == chrom_region_2) || (data1.chrom_pos == chrom_region_3) */){
+        // this checks for the chromosomal regions that I need to check for this particular project.
+        if( (data1.chrom_pos == chrom_region_2) || (data1.chrom_pos == chrom_region_1) || (data1.chrom_pos == chrom_region_2) || (data1.chrom_pos == chrom_region_3) ){
 
             //don't remove the comment lines until you have the merging part done with I22 or 319 whatever to make it work. '
             //do nothing here since I'm looking for these areas of the chromosomes
@@ -241,10 +241,14 @@ void printCluster(vector< vector<location> > &current, ofstream& out){
 void algorith_search(vector< vector<location> > &current, location data, bool in_cluster, int clut_size){
     //means it's a reverse read 
     for (int c = 0 ; c < current.size() ; c ++ ) {
-        if( data.position1 < current[c][0].position1 + clut_size ){
-            if ( ( abs( data.position2 - current[c][0].position2 ) ) < clut_size && ( abs( data.position1 - current[c][0].position1) ) < clut_size ){
-                current[c].push_back( data ) ; 
-                in_cluster = true ; 
+        if( current[c][0].chrom_pos != data.chrom_pos){
+            continue ; 
+        }else { 
+            if( data.position1 < current[c][0].position1 + clut_size ){
+                if ( ( abs( data.position2 - current[c][0].position2 ) ) < clut_size && ( abs( data.position1 - current[c][0].position1) ) < clut_size ){
+                    current[c].push_back( data ) ; 
+                    in_cluster = true ; 
+                }
             }
         }
     }
