@@ -1,3 +1,5 @@
+// this is an extra copy of reading3.cpp just in case the current one im using somehow vanishes. 
+// if it only produces results based on X chromosomal then, the iteration for the merging only goes through one at a time. 
 #include <iostream> 
 #include <string>
 #include <fstream>
@@ -141,37 +143,30 @@ int main(int argc, char * argv[]){
             continue; //skipping the ones that aren't sutiable candidates'
         }
         // cout << data1.samFlag << " this is a test" << endl ; //everything is being read fine
-
-        //remember to add on the secondary alignments once you're done with the core purpose'
-        //checking for reverse if it's there and if there are forward strands then continue leaving no other strands.
-        if ( (data1.samFlag == rev_1 || data1.samFlag == rev_2 || data1.samFlag == sec_rev_1 || data1.samFlag == sec_rev_2) \
-        && (data1.samFlag != for_1 || data1.samFlag != for_2 || data1.samFlag != sec_for_1 || data1.samFlag != sec_for_2) ) { 
-            //this works
-            data1.reverse = true ;
-            data1.forward = false ;  
-        }else if( (data1.samFlag == for_1 || data1.samFlag == for_2 || data1.samFlag == sec_for_1 || data1.samFlag == sec_for_2) \
-        && (data1.samFlag != rev_1 || data1.samFlag !=rev_2 || data1.samFlag != sec_rev_1 || data1.samFlag != sec_rev_2) ){
-            data1.reverse = false ;
-            data1.forward = true ; 
-        }
-        else if ( (data1.samFlag != for_1 || data1.samFlag != for_2 || data1.samFlag != sec_for_1 || data1.samFlag != sec_for_2) \
-         &&  (data1.samFlag != rev_1 || data1.samFlag != rev_2 || data1.samFlag != sec_rev_1 || data1.samFlag != sec_rev_2) ) { 
-
-            garbageFile << data1.ID << "\t" << data1.samFlag << "\t" << data1.chrom_pos << "\t" << data1.map_quality << \
-            "\t" << data1.position1 << "\t" << data1.position2 << "\n" ;             
-            continue ; 
-        }
-        // this checks for the chromosomal regions that I need to check for this particular project.
         if( (data1.chrom_pos == chrom_region_2) || (data1.chrom_pos == chrom_region_1) || (data1.chrom_pos == chrom_region_2) || (data1.chrom_pos == chrom_region_3) ){
 
             //don't remove the comment lines until you have the merging part done with I22 or 319 whatever to make it work. '
             //do nothing here since I'm looking for these areas of the chromosomes
 
         }else{
+            garbageFile << data1.ID << "\t" << data1.samFlag << "\t" << data1.chrom_pos << "\t" << data1.map_quality << \
+            "\t" << data1.position1 << "\t" << data1.position2 << "\n" ;             
             continue ; 
         }
-        
-
+        //remember to add on the secondary alignments once you're done with the core purpose'
+        //checking for reverse if it's there and if there are forward strands then continue leaving no other strands.
+        if ( (data1.samFlag == rev_1 || data1.samFlag == rev_2 || data1.samFlag == sec_rev_1 || data1.samFlag == sec_rev_2) ) { 
+            //this works
+            data1.reverse = true ;
+            data1.forward = false ;  
+        }else if( (data1.samFlag == for_1 || data1.samFlag == for_2 || data1.samFlag == sec_for_1 || data1.samFlag == sec_for_2) ){
+            data1.reverse = false ;
+            data1.forward = true ; 
+        }
+        else if ( (data1.samFlag != for_1 || data1.samFlag != for_2 || data1.samFlag != sec_for_1 || data1.samFlag != sec_for_2) \
+         &&  (data1.samFlag != rev_1 || data1.samFlag != rev_2 || data1.samFlag != sec_rev_1 || data1.samFlag != sec_rev_2) ) {        
+            continue ; 
+        }
         //this is the core of the function here
         //check why the forward clusters has a shit ton
         bool in_cluster = false ; 
@@ -349,70 +344,6 @@ void merging_clusters( vector< vector<location> > &current) {
     }
     //erasing the last one just in case 
     current.erase(current.begin() + delete_counter) ; 
-
-
-/*
-    vector<int> locations ; //unmergeable locations here
-    vector<int> finished ;  
-    vector< vector<location> > merged ; 
-    //set<location> m_cur ; 
-    bool has_array = false ; 
-    int counter = 0 ;  
-    int bookmark = 0 ; 
-    while(current.size() != 0){
-        //keep going until the size is 0 or something 
-        // if(current[0].size() < 3){
-        //     current.erase(current.begin()) ; 
-        //     continue ; 
-        // }
-        merged.push_back(current[0]) ; 
-        current.erase(current.begin()) ; //erasing the very first cluster each time 
-        /// looping through the remaining vector<vector<location>> current and merge into merged[counter]
-        for(int i = 0 ; i < current.size() ; i++){
-            // if(current[i].size() < 3) { 
-            //     finished.push_back(i) ; 
-            //     continue ; 
-            // }
-            //checking the size of the intersection to confirm they are alike 
-            vector<location> test_1, test_2 ; 
-            test_1 = intersection(merged[counter], current[i]) ;
-            int onefifth = merged[counter].size() / 5 ;  
-            if( test_1.size() >  onefifth && test_1.size() != onefifth ){
-                test_2 = unique_difference(merged[counter], current[i]) ; 
-                merged[counter].insert(merged[counter].end(), current[i].begin(), current[i].end() ) ; 
-                sort(merged[counter].begin(), merged[counter].end(), sortByLocation) ; 
-                finished.push_back(i) ; 
-            }
-        }
-        //removing clusters that have merged to avoid redundant clusters
-        for(int j = finished.size() ; j > 0 ; j--){
-            for(int i = current.size()  ; i > 0 ; i--){
-                //going backwards to avoid the vector reorganizing itself based on the memory address locations 
-                current.erase(current.begin() + finished[j]) ; 
-        }
-        finished.clear() ; 
-        cout << counter << " this is the value of counter here before incrementing it" << endl ; 
-        cout << "finished should be empty here " << finished.size() << endl ;
-        counter++ ; 
-    }
-    //making sure all the duplicates are really gone here
-    vector<vector<location> > now ; 
-    now.resize(merged.size()) ; 
-    for(int i = 0 ; i < merged.size() ; i++){
-        unsigned size = merged[i].size() ; 
-        set<location> m_cur(merged[i].begin(), merged[i].end()) ; 
-        now[i].assign(m_cur.begin(), m_cur.end()) ; 
-        m_cur.clear() ; 
-    }
-
-    // for(int i = 0 ; i < merged.size() ; i++){
-    //     merged[i].erase( unique( merged[i].begin(), merged[i].end()), merged[i].end()) ; 
-    // }
-
-
-    return now ; 
-*/
-
 }
 
 //I want to compare both the forward and reverse cluster and if they both are within similar distance 
