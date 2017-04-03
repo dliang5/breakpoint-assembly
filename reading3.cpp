@@ -74,10 +74,12 @@ bool location::operator<(const location& rhs) const {
 //helper/main functions 
 void algorith_search(vector< vector<location> > &, location, bool, int) ; //this will print the clusters to the files
 void printCluster(vector< vector<location> > &, ofstream& ) ; //this prints the cluster to the file 
-void search_potential_breaks(vector< vector<location> > &, vector< vector<location> > &, int, ofstream&, ofstream&) ; //this will use both forward and reverse clusters and try to find a potential breakpoint  
+void search_potential_breaks(vector< vector<location> > &, vector< vector<location> > &, int, ofstream&) ; //this will use both forward and reverse clusters and try to find a potential breakpoint  
 bool sortByLocation(const location &lhs , const location &rhs) ; //this sorts by position
+bool sortByLocation2(const location &lhs, const location &rhs) ; //this sorts by the highest posiiton
 vector<location> duplicate( vector<location> &, vector<location> & ) ; 
 void merging_clusters( vector< vector<location> > &) ; //this is just condensing the clusters into one big cluster to avoid duplications in the goodFile
+void produce_summary(vector<vector<location> > &, vector<vector<location> > &, ofstream&) ; //this produces the summary file
 //test running program on 303_parsed.sam
  
 int main(int argc, char * argv[]){
@@ -236,25 +238,30 @@ int main(int argc, char * argv[]){
     merging_clusters(rev_clusters) ; 
     printCluster(for_clusters, outFile) ; 
     printCluster(rev_clusters, outFile) ; 
-    search_potential_breaks(for_clusters, rev_clusters, cluster_size, goodFile, summary) ; 
+    search_potential_breaks(for_clusters, rev_clusters, cluster_size, goodFile) ; 
+    produce_summary(for_clusters, rev_clusters, summary) ; 
 
     merging_clusters(for_clusters_1) ;
     merging_clusters(rev_clusters_1) ; 
     printCluster(for_clusters_1, outFile) ; 
     printCluster(rev_clusters_1, outFile) ; 
-    search_potential_breaks(for_clusters_1, rev_clusters_1, cluster_size, goodFile, summary) ; 
+    search_potential_breaks(for_clusters_1, rev_clusters_1, cluster_size, goodFile) ; 
+    produce_summary(for_clusters_1, rev_clusters_1, summary) ; 
 
     merging_clusters(for_clusters_2) ;
     merging_clusters(rev_clusters_2) ; 
     printCluster(for_clusters_2, outFile) ; 
     printCluster(rev_clusters_2, outFile) ; 
-    search_potential_breaks(for_clusters_2, rev_clusters_2, cluster_size, goodFile, summary) ; 
+    search_potential_breaks(for_clusters_2, rev_clusters_2, cluster_size, goodFile) ; 
+    produce_summary(for_clusters_2, rev_clusters_2, summary) ; 
 
     merging_clusters(for_clusters_3) ;
     merging_clusters(rev_clusters_3) ; 
     printCluster(for_clusters_3, outFile) ; 
     printCluster(rev_clusters_3, outFile) ; 
-    search_potential_breaks(for_clusters_3, rev_clusters_3, cluster_size, goodFile, summary) ; 
+    search_potential_breaks(for_clusters_3, rev_clusters_3, cluster_size, goodFile) ; 
+    produce_summary(for_clusters_3, rev_clusters_3, summary) ; 
+
 
            
 //There are some files that are already separated it in a smaller scale
@@ -367,7 +374,7 @@ void merging_clusters( vector< vector<location> > &current) {
 
 //I want to compare both the forward and reverse cluster and if they both are within similar distance 
 //then the whole cluster is printed into the good_file.
-void search_potential_breaks(vector< vector<location> > &forward , vector< vector<location> > &reverse, int clut_size, ofstream& out, ofstream& summary) {
+void search_potential_breaks(vector< vector<location> > &forward , vector< vector<location> > &reverse, int clut_size, ofstream& out) {
     //use forward cluster to check reverse cluster.
     //the assumption is that the clusters are already above size 4 each.
     int counter_check = 0 ;  
@@ -388,23 +395,14 @@ void search_potential_breaks(vector< vector<location> > &forward , vector< vecto
 
                     if( ( abs( f_strand_1 - r_strand_1 ) < 30000 && abs( f_strand_1 - r_strand_1 ) < 30000  ) \
                     && ( abs( f_strand_2 - r_strand_2 ) < 30000 && abs( f_strand_2 - r_strand_2) < 30000 ) ) {
-                        
+                        vector<location> summary ; 
                         //that might not work in general.
                         //this in theory should print out forward and reverse clusters together to show they are a good match or not
                             for(int j = 0 ; j < forward[f].size() ; j++){
-                                if(j == 0 || j == forward[f].size()-1){ //for summary file
-                                    summary << f << "\t";
-                                    summary << forward[f][j].ID << "\t" << forward[f][j].samFlag << "\t" << forward[f][j].chrom_pos << "\t" << forward[f][j].map_quality << "\t" << forward[f][j].position1 << "\t" << forward[f][j].position2 << '\n'; 
-                                }
                                 out << f << "\t";
                                 out << forward[f][j].ID << "\t" << forward[f][j].samFlag << "\t" << forward[f][j].chrom_pos << "\t" << forward[f][j].map_quality << "\t" << forward[f][j].position1 << "\t" << forward[f][j].position2 << '\n'; 
                             }
                             for(int j = 0 ; j < reverse[r].size() ; j++){
-                                if(j == 0 || j == reverse[r].size()-1){ //for summary file 
-                                    summary << r << "\t";
-                                    summary << reverse[r][j].ID << "\t" << reverse[r][j].samFlag << "\t" << reverse[r][j].chrom_pos << "\t" << reverse[r][j].map_quality << "\t" << reverse[r][j].position1 << "\t" << reverse[r][j].position2 << '\n'; 
-				    //summary << endl ; 
-                                } 
                                 out << r << "\t";
                                 out << reverse[r][j].ID << "\t" << reverse[r][j].samFlag << "\t" << reverse[r][j].chrom_pos << "\t" << reverse[r][j].map_quality << "\t" << reverse[r][j].position1 << "\t" << reverse[r][j].position2 << '\n'; 
                             }
@@ -412,8 +410,58 @@ void search_potential_breaks(vector< vector<location> > &forward , vector< vecto
                            // out << "---------------------------------------" << f << "----------------------------------------------" <<  endl ; 
                             out << endl ; 
                             counter_check = r ; 
-			    summary << endl ; 
                             break ; 
+                    }
+                }
+            }
+        }
+    }
+}
+
+void produce_summary(vector<vector<location> > &forward, vector<vector<location> > &reverse, ofstream& summary) { 
+    int counter_check = 0 ;  
+    bool check = false ; 
+    int move_on = 0 ; 
+    for ( int f = 0 ; f < forward.size() ; f++ ){
+        int flag = 0 ;
+
+        if(forward[f].size() > 4) {
+            int size = forward[f].size() ;
+            int f_strand_1 = forward[f][0].position1 ;
+            int f_strand_2 = forward[f][0].position2 ;
+            //just to get the distance for each forward cluster and compare it to the reverse clusters and see what's up 
+            for( int r = 0 ; r < reverse.size() ; r++ ){  
+                if(counter_check > r){ r = counter_check ; } //skipping the ones we have as clusters . 
+                int r_strand_1 = reverse[r][0].position1 ; int r_strand_2 = reverse[r][0].position2 ; 
+
+                if (reverse[r].size() > 4) { 
+
+                    if( ( abs( f_strand_1 - r_strand_1 ) < 30000 && abs( f_strand_1 - r_strand_1 ) < 30000  ) \
+                    && ( abs( f_strand_2 - r_strand_2 ) < 30000 && abs( f_strand_2 - r_strand_2) < 30000 ) ) {
+                        //that might not work in general.
+                        //this in theory should print out forward and reverse clusters together to show they are a good match or not
+                        int f_size = forward[f].size() ;
+                        int r_size = reverse[r].size() ;
+                        summary << f << '\t' << forward[f][0].samFlag << '\t' << forward[f][0].chrom_pos << '\t' << forward[f][0].position1 ; 
+                        int position1 = 0, position2 = 0 ; 
+                        position1 = forward[f][f_size-1].position1 ; //the highest position 
+                        sort(forward[f].begin(), forward[f].end(), sortByLocation2) ;
+                        summary << '\t' << forward[f][0].position2 ; 
+                        position2 = forward[f][f_size-1].position2 ;
+                        summary << '\t' << position1 << '\t' << position2 << '\t'<< f_size;  
+                        summary << endl ; 
+
+                        summary << r << '\t' << reverse[r][0].samFlag << '\t'  << reverse[r][0].chrom_pos << '\t' << reverse[r][0].position1 ; 
+                        sort(reverse[r].begin(), reverse[r].end(), sortByLocation2) ;
+                        summary << '\t' << reverse[r][0].position2 ; 
+                        sort(reverse[r].begin(), reverse[r].end(), sortByLocation) ; 
+                        summary << '\t' << reverse[r][r_size].position1 ; 
+                        sort(reverse[r].begin(), reverse[r].end(), sortByLocation2) ; 
+                        summary << '\t' << reverse[r][r_size].position2 << '\t' << r_size;  
+
+                        counter_check = r ; 
+                        summary << endl << endl ; 
+                        break ; 
                     }
                 }
             }
@@ -431,3 +479,12 @@ bool sortByLocation(const location &lhs , const location &rhs){
     }
 }
 
+bool sortByLocation2(const location &lhs, const location &rhs){
+    if (lhs.position2 < rhs.position2){
+        return true ; 
+    }else if (lhs.position2 > rhs.position2){
+        return false ; 
+    }else if(lhs.position2 == rhs.position2){
+        return false ; 
+    }
+}

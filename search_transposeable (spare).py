@@ -37,7 +37,7 @@ class location:
 # 194 65 2L 13604007 23063123 136006061 23063088
 # basically, this shows the <cluster_index> <samflag> <chrom_region> <low_position1> <low_position2> <high_position1> <high_position2> 
 class b_location: 
-    def __init__(self, index, samflag, chrom_ref, low_position1, low_position2, high_position1, high_position2, size): 
+    def __init__(self, index, samflag, chrom_ref, low_position1, low_position2, high_position1, high_position2): 
         self.index = index 
         self.samflag = samflag 
         self.chrom_ref = chrom_ref 
@@ -45,7 +45,6 @@ class b_location:
         self.low_position2 = low_position2
         self.high_position1 = high_position1 
         self.high_position2 = high_position2 
-        self.size = size 
     
     # class functions 
     def getsamflag(self): 
@@ -62,8 +61,6 @@ class b_location:
         return self.chrom_ref 
     def getindex(self): 
         return self.index 
-    def getSize(self):
-        return self.size
     def displayInfo(self):
         print " this is the breakpoint here " + str(self.samflag) + " " + self.chrom_ref + " " + str(self.low_position1) + " " + str(self.low_position2) + " " + str(self.high_position1) + " " + str(self.high_position2) 
     
@@ -113,8 +110,7 @@ with open(break_point_name, "r") as f:
             print content[4]
             print content[5]
             print content[6]
-            print content[7]
-            decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
+            decoy = b_location( int(content[0]), content[1], int(content[2]), content[3], int(content[4]), int(content[5]), int(content[6]))
             break_objects.append(decoy) 
             decoy.displayInfo() 
 
@@ -127,30 +123,33 @@ if check_sum == 0 :
 nope_number = []
 yes_number = []
 print "bob" 
-counter = 0 # this is to keep track of the number of reads within TE at least 80% 
 for rand_list in break_store: # getting each individual list
     print " Here " 
     f_count = 0 # count to check
     s_count = 0 # checking the second position for it as well 
     for t_index, entry in enumerate(rand_list): # iterating individually through chosen list
         entry.displayInfo() 
-        in_transrange = False 
-        for trans in trans_objects: # iterating through TE now 
-            if entry.getchrom_ref() == trans.getchrom_ref(): # making sure the location is the same
-                if entry.getlowposition1() <= trans.getposition1() <= entry.getlowposition2() or entry.gethighposition1() <= trans.getposition1() <= entry.gethighposition2():
-                    counter+=1
-                elif entry.getlowposition1() <= trans.getposition2() <= entry.getlowposition2() or entry.gethighposition1() <= trans.getposition2() <= entry.gethighposition2(): 
-                    counter+=1 
-                    
-                if(counter > entry.getSize()*.8):
-                    in_transrange = True 
-        if (in_transrange == True):
-            nope_number.append(rand_list)
-            print "nope" 
-            break 
-    if in_transrange == False:
-        print 'yes' 
-        yes_number.append(rand_list)
+        for j in trans_objects: # iterating through TE now 
+            if entry.getchrom_ref() == j.getchrom_ref(): # making sure the location is the same
+                # gotta check if let's say position1 or positoin2 is in the TE range 
+                if j.getposition1() <= entry.getposition1() <= j.getposition2(): 
+                    # print j.getposition1() + " against " + entry.getposition1()
+                    # print entry.getposition1() + " against " + j.getposition2() 
+                    f_count += 1   
+                elif j.getposition1() <= entry.getposition2() <= j.getposition2(): 
+                    # print j.getposition1() + " against " + entry.getposition2()
+                    # print entry.getposition2() + " against " + j.getposition2() 
+                    s_count += 1  
+                billy = len(rand_list)
+                print "this is the length of rand_list here should be 3 " + str(billy)
+                print str(t_index)  
+                if (len(rand_list) * .8 ) <= f_count or (len(rand_list) * .8) <= s_count: # if count is greater than the size of the cluster, then it's TE. 
+                    nope_number.append(rand_list) # done checking so we push
+                    print "nope"
+                    continue
+        if t_index == len(rand_list)-1: # if not a TE, push to yes_number
+            print "yes" 
+            yes_number.append(rand_list) 
             
 print "mango" 
 for i in break_store: 
@@ -168,10 +167,10 @@ for j in yes_number:
         # bobby = str(i.getposition1)
         # joe = str(i.getposition2)
     # print str(count) + "\t" + str(i.getindex()) + "\t" + i.getID() + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getposition1) + "\t" + str(i.getposition2) 
-        write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2()) + '\n' ) 
+        write_file.write(str(i.getindex()) + "\t" + i.getID() + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getposition1()) + "\t" + str(i.getposition2()) + "\n") 
     write_file.write("\n")
 
-# # writing a file of the actual reads based on the exisiting summary clusters
-# read_file = "good_"+name[1]+"-result"
-# with open(read_file) as read:
-#     for line in read: 
+# writing a file of the actual reads based on the exisiting summary clusters
+read_file = "good_"+name[1]+"-result"
+with open(read_file) as read:
+    for line in read: 
