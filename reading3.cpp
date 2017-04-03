@@ -455,9 +455,9 @@ void produce_summary(vector<vector<location> > &forward, vector<vector<location>
                         sort(reverse[r].begin(), reverse[r].end(), sortByLocation2) ;
                         summary << '\t' << reverse[r][0].position2 ; 
                         sort(reverse[r].begin(), reverse[r].end(), sortByLocation) ; 
-                        summary << '\t' << reverse[r][r_size].position1 ; 
+                        summary << '\t' << reverse[r][r_size-1].position1 ; 
                         sort(reverse[r].begin(), reverse[r].end(), sortByLocation2) ; 
-                        summary << '\t' << reverse[r][r_size].position2 << '\t' << r_size;  
+                        summary << '\t' << reverse[r][r_size-1].position2 << '\t' << r_size;  
 
                         counter_check = r ; 
                         summary << endl << endl ; 
