@@ -97,10 +97,19 @@ with open(break_point_name, "r") as f:
             #del break_objects[:] # deleting everything in break_objects. 
             break_objects = [] # recreating another list or emptying the current one
             check_sum += 1 
-        content = line.split() 
-        decoy = b_location( int(content[0]), content[1], int(content[2]), content[3], int(content[4]), int(content[5]), int(content[6]))
-        break_objects.append(decoy) 
-        decoy.displayInfo() 
+        else: 
+            content = line.split() 
+            print "testing"
+            print content[0] 
+            print content[1]
+            print content[2]
+            print content[3]
+            print content[4]
+            print content[5]
+            print content[6]
+            decoy = b_location( int(content[0]), content[1], int(content[2]), content[3], int(content[4]), int(content[5]), int(content[6]))
+            break_objects.append(decoy) 
+            decoy.displayInfo() 
 
 # if there's only one cluster so it will never go through the other one.
 if check_sum == 0 : 
@@ -121,12 +130,12 @@ for rand_list in break_store: # getting each individual list
             if entry.getchrom_ref() == j.getchrom_ref(): # making sure the location is the same
                 # gotta check if let's say position1 or positoin2 is in the TE range 
                 if j.getposition1() <= entry.getposition1() <= j.getposition2(): 
-                    print j.getposition1() + " against " + entry.getposition1()
-                    print entry.getposition1() + " against " + j.getposition2() 
+                    # print j.getposition1() + " against " + entry.getposition1()
+                    # print entry.getposition1() + " against " + j.getposition2() 
                     f_count += 1   
                 elif j.getposition1() <= entry.getposition2() <= j.getposition2(): 
-                    print j.getposition1() + " against " + entry.getposition2()
-                    print entry.getposition2() + " against " + j.getposition2() 
+                    # print j.getposition1() + " against " + entry.getposition2()
+                    # print entry.getposition2() + " against " + j.getposition2() 
                     s_count += 1  
                 billy = len(rand_list)
                 print "this is the length of rand_list here should be 3 " + str(billy)
