@@ -71,7 +71,7 @@ class b_location:
 # python search_transposeable name[1] or the breakpointfile here
 print 'Argument List:', str(sys.argv)
 name = str(sys.argv).split(" ") 
-write_name = name[1].lstrip("'").rstrip("']")+"-breakpoints" # this is getting the name of the file being written into with actual breakpoints that pass the transponseable element test 
+write_name = "summary-"+name[1].lstrip("'").rstrip("']")+"-breakpoints" # this is getting the name of the file being written into with actual breakpoints that pass the transponseable element test 
 break_point_name = "summary-"+name[1].lstrip("'").rstrip("']")+"-result" 
 write_file = open(write_name, "w")  
 
@@ -85,12 +85,9 @@ with open("TE_sites.txt", "r") as f:
     for line in f: 
         content = line.split() 
         decoy = location( content[0], int(content[3]), int(content[4]) )
-        # decoy.displayInfo()
         # print "this is the current counter after each line " + str(decoy.getSize())
         trans_objects.append(decoy)   
-# print "testing one more time" 
-# for i in trans_objects: 
-#     i.displayInfo() 
+
 
 # getting the values of the clusters here from summary_*.txt  
 break_store = [] # this will hold a list of list
@@ -105,18 +102,9 @@ with open(break_point_name, "r") as f:
             check_sum += 1 
         else: 
             content = line.split() 
-            print "testing"
-            print content[0] 
-            print content[1]
-            print content[2]
-            print content[3]
-            print content[4]
-            print content[5]
-            print content[6]
-            print content[7]
             decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
             break_objects.append(decoy) 
-            decoy.displayInfo() 
+            # decoy.displayInfo() 
 
 # if there's only one cluster so it will never go through the other one.
 if check_sum == 0 : 
@@ -127,51 +115,49 @@ if check_sum == 0 :
 nope_number = []
 yes_number = []
 print "bob" 
+check_counter = 0 # in case if one matches a transposeable element, remove the corresponding cluster as it's kind of useless now. 
 counter = 0 # this is to keep track of the number of reads within TE at least 80% 
-for rand_list in break_store: # getting each individual list
-    print " Here " 
-    f_count = 0 # count to check
-    s_count = 0 # checking the second position for it as well 
+checklist = False 
+for index, rand_list in enumerate(break_store): # getting each individual list
     for t_index, entry in enumerate(rand_list): # iterating individually through chosen list
-        entry.displayInfo() 
         in_transrange = False 
         for trans in trans_objects: # iterating through TE now 
             if entry.getchrom_ref() == trans.getchrom_ref(): # making sure the location is the same
-                if entry.getlowposition1() <= trans.getposition1() <= entry.getlowposition2() or entry.gethighposition1() <= trans.getposition1() <= entry.gethighposition2():
+                # the problem here is that the TE are so specific that almost everything goes through 
+                # if entry.getlowposition1() <= trans.getposition1() <= entry.gethighposition1() or entry.getlowposition2() <= trans.getposition1() <= entry.gethighposition2():
+                #     counter+=1
+                #     # continue 
+                # elif entry.getlowposition1() <= trans.getposition2() <= entry.gethighposition1() or entry.getlowposition2() <= trans.getposition2() <= entry.gethighposition2(): 
+                #     counter+=1 
+                #     # continue 
+                if trans.getposition1() <= entry.getlowposition1() <= trans.getposition2() or trans.getposition1() <= entry.gethighposition1() <= trans.getposition2():
                     counter+=1
-                elif entry.getlowposition1() <= trans.getposition2() <= entry.getlowposition2() or entry.gethighposition1() <= trans.getposition2() <= entry.gethighposition2(): 
-                    counter+=1 
-                    
-                if(counter > entry.getSize()*.8):
+                elif trans.getposition1() <= entry.getlowposition2() <= trans.getposition2() or trans.getposition1() <= entry.gethighposition2() <= trans.getposition2():
+                    counter+=1
+                if(counter >= entry.getSize()*.8 ):
                     in_transrange = True 
         if (in_transrange == True):
             nope_number.append(rand_list)
-            print "nope" 
             break 
     if in_transrange == False:
-        print 'yes' 
         yes_number.append(rand_list)
             
-print "mango" 
-for i in break_store: 
-    for j in i: 
-        j.displayInfo()
-print "checking yes now" 
-for i in yes_number: 
-    for j in i: 
-        j.displayInfo()
-# writing the cluster that is not have any issues. 
-# this only writes from the summary cluster, I need to write from the other list of clusters. 
 for j in yes_number: 
-    print "bob"
     for count, i in enumerate(j): 
-        # bobby = str(i.getposition1)
-        # joe = str(i.getposition2)
-    # print str(count) + "\t" + str(i.getindex()) + "\t" + i.getID() + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getposition1) + "\t" + str(i.getposition2) 
         write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2()) + '\n' ) 
     write_file.write("\n")
 
 # # writing a file of the actual reads based on the exisiting summary clusters
-# read_file = "good_"+name[1]+"-result"
-# with open(read_file) as read:
-#     for line in read: 
+read_file = "good_"+name[1].lstrip("'").rstrip("']")+"-result"
+new_write = name[1].lstrip("'").rstrip("']")+"-breakpoints"
+writing = open(new_write, 'w')
+with open(read_file) as f:
+    for line in f: 
+        content = line.split("\t")
+        # print content[0]
+        for i in yes_number: 
+            for j in i: 
+                if content[0] == str( j.getindex() ): 
+                    # start writing it 
+                    writing.write(line) 
+                
