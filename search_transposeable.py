@@ -144,7 +144,7 @@ for index, rand_list in enumerate(break_store): # getting each individual list
             
 for j in yes_number: 
     for count, i in enumerate(j): 
-        write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2()) + '\n' ) 
+        write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + '\n' ) 
     write_file.write("\n")
 
 # # writing a file of the actual reads based on the exisiting summary clusters
