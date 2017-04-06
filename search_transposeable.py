@@ -152,9 +152,13 @@ read_file = "good_"+name[1].lstrip("'").rstrip("']")+"-result"
 new_write = name[1].lstrip("'").rstrip("']")+"-breakpoints"
 writing = open(new_write, 'w')
 with open(read_file) as f:
-    for line in f: 
-        content = line.split("\t")
-        # print content[0]
+    for line in f:
+        content = [x.strip() for x in line.split("\t")]
+        if len(content) != 7: 
+            continue 
+        else: 
+            print content
+        #content = line.split("\t")
         for i in yes_number: 
             for j in i: 
                 if content[0] == str( j.getindex() ): 
