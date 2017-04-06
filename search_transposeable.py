@@ -66,18 +66,20 @@ class b_location:
         return self.size
     def displayInfo(self):
         print " this is the breakpoint here " + str(self.samflag) + " " + self.chrom_ref + " " + str(self.low_position1) + " " + str(self.low_position2) + " " + str(self.high_position1) + " " + str(self.high_position2) 
-    
+"""
 # how this works : 
 # python search_transposeable name[1] or the breakpointfile here
+"""
 print 'Argument List:', str(sys.argv)
 name = str(sys.argv).split(" ") 
 write_name = "summary-"+name[1].lstrip("'").rstrip("']")+"-breakpoints" # this is getting the name of the file being written into with actual breakpoints that pass the transponseable element test 
 break_point_name = "summary-"+name[1].lstrip("'").rstrip("']")+"-result" 
 write_file = open(write_name, "w")  
-
+"""
 # check out the tranposeable elements here and store them into a list or whatever that is easier to do so 
 # then read in everything of the entire line - class - then compare only the first and second locations 
-#                   ----> check to see if it is within the range tho.   
+#                   ----> check to see if it is within the range tho.  
+""" 
 trans_objects = []
 break_objects = []  
 # getting the value of the TE here 
@@ -110,8 +112,34 @@ with open(break_point_name, "r") as f:
 if check_sum == 0 : 
     break_store.append(break_objects)
 
+"""
+reading the Dmel table to set up for the comparsion 
+"""
+dmel_holder = []
+with open("DmelMapTable.txt", 'r') as f: 
+    for i in f: 
+        temp_dmel_store = []
+        content = [x.strip() for x in i.split(',')]
+        """ this gets the chrom_region and positions together"""
+        chrom_info = [x.strip() for x in content[2].split(":")]
+        # print chrom_info
+        """ this will now separate the positiosn from .. """
+        if ( len(chrom_info) == 2):  
+            pos_info = [x for x in chrom_info[1].split("..")]
+            temp_dmel_store.append( chrom_info[0] ) 
+            temp_dmel_store.append( (pos_info[0]) ) 
+            temp_dmel_store.append( pos_info[1] ) 
+            dmel_holder.append(temp_dmel_store) 
+            print temp_dmel_store
+        else: 
+            continue 
+
+"""check the values in yes_number to the dmel table to further more validate the results """ 
+"""-----------------------------------------------------------------------------------==="""
+"""
 # searches and compare the TE element with the cluster and see if it is close
 # if one part matches then count, if at least like 50 - 80 % matches then add it to the list
+"""
 nope_number = []
 yes_number = []
 print "bob" 
@@ -147,7 +175,10 @@ for j in yes_number:
         write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + '\n' ) 
     write_file.write("\n")
 
-# # writing a file of the actual reads based on the exisiting summary clusters
+
+""" writing a file of the actual reads based on the exisiting summary clusters
+this will also check for the Dmel or the theoretical breakpoints here as well 
+"""
 read_file = "good_"+name[1].lstrip("'").rstrip("']")+"-result"
 new_write = name[1].lstrip("'").rstrip("']")+"-breakpoints"
 writing = open(new_write, 'w')
@@ -156,8 +187,6 @@ with open(read_file) as f:
         content = [x.strip() for x in line.split("\t")]
         if len(content) != 7: 
             continue 
-        else: 
-            print content
         #content = line.split("\t")
         for i in yes_number: 
             for j in i: 
