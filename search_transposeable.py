@@ -69,6 +69,7 @@ class b_location:
 """
 # how this works : 
 # python search_transposeable name[1] or the breakpointfile here
+it calls reads summary-ZI213-result 
 """
 print 'Argument List:', str(sys.argv)
 name = str(sys.argv).split(" ") 
@@ -130,10 +131,11 @@ with open("DmelMapTable.txt", 'r') as f:
             temp_dmel_store.append( (pos_info[0]) ) 
             temp_dmel_store.append( pos_info[1] ) 
             dmel_holder.append(temp_dmel_store) 
-            print temp_dmel_store
+            # print temp_dmel_store
         else: 
             continue 
-
+# for i in dmel_holder: 
+#     print i[0], i[1], i[2]  
 """check the values in yes_number to the dmel table to further more validate the results """ 
 """-----------------------------------------------------------------------------------==="""
 """
@@ -142,6 +144,7 @@ with open("DmelMapTable.txt", 'r') as f:
 """
 nope_number = []
 yes_number = []
+new_yes_number = [] # this is me being lazy and appending the clusters that was checked by dmel table. 
 print "bob" 
 check_counter = 0 # in case if one matches a transposeable element, remove the corresponding cluster as it's kind of useless now. 
 counter = 0 # this is to keep track of the number of reads within TE at least 80% 
@@ -169,28 +172,90 @@ for index, rand_list in enumerate(break_store): # getting each individual list
             break 
     if in_transrange == False:
         yes_number.append(rand_list)
-            
-for j in yes_number: 
-    for count, i in enumerate(j): 
-        write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + '\n' ) 
-    write_file.write("\n")
 
+temp_dmel_holder = dmel_holder[:]
+for t_index,j in enumerate(yes_number): 
+    for count, i in enumerate(j):
+        # print i.displayInfo()
+        for index, dmel_line in enumerate(dmel_holder): 
+            if (str(dmel_line[0]) == i.getchrom_ref()):
+                if (int(dmel_line[1]) <= i.getlowposition1() <= int(dmel_line[2]) or int(dmel_line[1]) <= i.gethighposition1() <= int(dmel_line[2])):
+                    # then check for the other end to see if they are around the same 
+                    # temp_dmel_holder = dmel_holder[index:]
+                    for temp_line in temp_dmel_holder:
+                        if (str(temp_line[0]) == i.getchrom_ref()):
+                            if (int(temp_line[1]) <= i.getlowposition2() <= int(temp_line[2]) or int(temp_line[1]) <= i.gethighposition2() <= int(temp_line[2])):
+                            # if (i.getlowposition1() <= int(dmel_line[1]) <= i.gethighposition1() or i.getlowposition2() <= int(dmel_line[1]) <= i.gethighposition2()):
+                                write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + '\n' ) 
+                                #write_file.write("\n")
+                                # if ((count+1) % 2 == 0):
+                                #     write_file.write("\n")
+                                break # done with this position if everything matches 
 
+# i can just read the new file and create the cluster based on that. 
+# open the "summary-<SRR>-breakpoints" to get the needed clusters to print out in <SRR>-breakpoints
+write_file.close() 
+with open(write_name, 'r') as f:  
+    for i in f: 
+        temp_new_yes_number = [] 
+        content = [x.strip() for x in i.split("\t")]
+        decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
+        temp_new_yes_number.append(decoy) 
+        new_yes_number.append(temp_new_yes_number)
+        # print content[0], content[1], content[2], content[3], content[4], content[5], content[6], content[7]
+
+# # this will now hold the official set 
+# breakpoint_product = [] 
+# recurrence_product = [] 
+# """ checking for redundant clusters aka mainly 3R suckers""" 
+# for count, current in enumerate(new_yes_number):
+#     for cur_line in current:  
+#         for remain in new_yes_number[count:]: 
+#             for cdr_line in remain: 
+#                 if (cur_line.getchrom_ref() != cdr_line.getchrom_ref()):
+#                     continue 
+#                 else: 
+#                     if (cur_line.getlowposition1()-30000 <= cdr_line.getlowposition1() <= cur_line.getlowposition1()+30000) or \
+#                        (cur_line.gethighposition1()-30000 <= cdr_line.gethighposition1() <= cur_line.gethighposition1()+30000) or\
+#                        (cur_line.getlowposition2()-30000 <= cdr_line.getlowposition2() <= cur_line.gethighposition2()+30000) or\
+#                        (cur_line.gethighposition2()-30000 <= cdr_line.gethighposition2() <= cur_line.gethighposition2()+30000):
+#                        if remain not in recurrence_product: 
+#                            recurrence_product.append(current)
+#                     else: 
+#                         breakpoint_product.append(current) 
+
+# for i in recurrence_product: 
+#     for j in i: 
+#         print (str(j.getindex()) + "\t").strip("\n")
+#         print j.displayInfo() 
+# print ("break-------------------------------------------------------------------------------")
+# for i in breakpoint_product: 
+#     for j in i: 
+#         print (str(j.getindex()) + "\t").strip("\n")
+#         print j.displayInfo()     
+                        
+    
+print "billy"
 """ writing a file of the actual reads based on the exisiting summary clusters
 this will also check for the Dmel or the theoretical breakpoints here as well 
 """
 read_file = "good_"+name[1].lstrip("'").rstrip("']")+"-result"
 new_write = name[1].lstrip("'").rstrip("']")+"-breakpoints"
 writing = open(new_write, 'w')
+
+# this is opening good_<SRR>-results which is has the full info on the clusters
+# why is it printing 10 of each element in a cluster? 
 with open(read_file) as f:
     for line in f:
         content = [x.strip() for x in line.split("\t")]
-        if len(content) != 7: 
+        if len(content) != 7: # to avoid getting an error for index out of range due to the empty line separating them? 
             continue 
         #content = line.split("\t")
-        for i in yes_number: 
+        for i in new_yes_number: 
             for j in i: 
                 if content[0] == str( j.getindex() ): 
                     # start writing it 
                     writing.write(line) 
+                    break  
+                    
                 

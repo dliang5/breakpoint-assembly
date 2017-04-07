@@ -5,6 +5,7 @@
 # this can be used individually, but it is more effectively being used by the other script file which calls it. 
 SUBMITFILE=$1
 SRRFILE=$2
+LINENUMBER=$3
 samSUBMITFILE=$SUBMITFILE".sam" 
 reSUBMITFILE=$SUBMITFILE"-result"
 COUNTER=0

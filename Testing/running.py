@@ -19,6 +19,9 @@ print (number)
 name = "set_"+number+"_"
 filename = "set_"+number+".txt"
 lineNumber=0 
+fileposition = arg_content[2].lstrip("['").rstrip(",']")
+with open(filename, 'r') as f: 
+    lineNumber = sum(1 for _ in f)
 # read the SRRfile and the content inside. 
 with open(filename, 'r') as f: 
     # lineNumber = sum(1 for _ in f) 
@@ -32,7 +35,7 @@ with open(filename, 'r') as f:
         for count,i in enumerate(f): 
             count+=1
             submission = name+str(count)+".sam" # this forms set_1_* <* is any number> 
-            path = "qsub running2.sh " + submission + " " + j 
+            path = "qsub running2.sh " + submission + " " + j + " " + lineNumber + fileposition 
             s_path = '/bin/bash' 
             sp.Popen(path, shell=True,executable=s_path ) 
         # print ("set_"+"1_"+str(count)+" to -> " + i).strip("\n")
