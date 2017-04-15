@@ -159,6 +159,7 @@ for index, rand_list in enumerate(break_store): # getting each individual list
                  or trans.getposition1() <= entry.getlowposition2() <= trans.getposition2() or trans.getposition1() <= entry.gethighposition2() <= trans.getposition2():
                     counter+=1
                 if(counter >= entry.getSize()*.8 ):
+                    cout << entry.displayInfo() << endl ; 
                     in_transrange = True 
         if (in_transrange == True):
             nope_number.append(rand_list)

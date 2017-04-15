@@ -1,5 +1,9 @@
 import os
-"""This file will check for similar clusters throughout the files""" 
+"""This file will check for similar clusters throughout the files and
+ other files to make sure there's no redundant everywhere
+ 
+ Right now: run this later and do it after everything is working. 
+ """ 
 # to call this separately: 
 # python similarclusters.py <# of SRR> 
 # as long as there is 1+ clusters of almost identical reads, check for them all. 
@@ -37,8 +41,8 @@ class b_location:
 def main(): 
     arg_content = str(sys.argv).split() 
     content = arg_content[1].lstrip("['").rstrip(",']")
-    lineNumber = int(content) 
-    fileposition = arg_content[2].lstrip("['").rstrip(",']")
+    lineNumber = int(content) # line number as in how many set files are there 
+    fileposition = arg_content[2].lstrip("['").rstrip(",']") # fileposition = 
     original_breakpoints = []
     recurrence = []
     # reading every set file for the breakpoints
@@ -54,4 +58,4 @@ def main():
         
 
 
-main() 
+main()  

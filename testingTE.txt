@@ -1,0 +1,3 @@
+2L	FlyBase	transposable_element	6991487	6998548	.	-	.	ID=FBti0019130;Name=HMS-Beagle{}318;Alias=HMS-Beagle{}318,TE19130;gbunit=AE003615;derived_cyto_location=27D2-27D3;derived_comput_cyto_location=27D2-27D3
+2L	FlyBase	transposable_element	7088646	7088783	.	+	.	ID=FBti0063691;Name=INE-1{}5630;Alias=INE-1#228,TE63691;derived_cyto_location=27E1-27E1;derived_comput_cyto_location=27E1
+2L	FlyBase	transposable_element	11713562	11720972	.	+	.	ID=FBti0019152;Name=blood{}344;Alias=blood{}344,TE19152;gbunit=AE003633;derived_cyto_location=33A1-33A1;derived_comput_cyto_location=33A1

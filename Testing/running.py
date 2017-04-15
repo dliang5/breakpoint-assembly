@@ -19,25 +19,22 @@ print (number)
 name = "set_"+number+"_"
 filename = "set_"+number+".txt"
 lineNumber=0 
-fileposition = arg_content[2].lstrip("['").rstrip(",']")
-with open(filename, 'r') as f: 
-    lineNumber = sum(1 for _ in f)
 # read the SRRfile and the content inside. 
 with open(filename, 'r') as f: 
     # lineNumber = sum(1 for _ in f) 
     # f.seek(0) 
-    for j in f: # getting the SRRname here 
+    for count, j in enumerate(f): # getting the SRRname here 
         """ 
         here, this then creates the submission to qsub to the cluster 
         so it'll be "qsub running2.sh <set_1_1.sam> <SRRname of set_1_1.sam"> 
         the SRRname comes from the set_*.txt 
         """
-        for count,i in enumerate(f): 
-            count+=1
-            submission = name+str(count)+".sam" # this forms set_1_* <* is any number> 
-            path = "qsub running2.sh " + submission + " " + j + " " + lineNumber + fileposition 
-            s_path = '/bin/bash' 
-            sp.Popen(path, shell=True,executable=s_path ) 
+        count+=1
+        submission = name+str(count) # this forms set_1_* <* is any number> 
+        path = "qsub running2.sh " + submission + " " + j.strip("\n") 
+        s_path = '/bin/bash'
+        print(submission + " ->" +  j.strip("\n") )  
+        sp.Popen(path, shell=True,executable=s_path ) 
         # print ("set_"+"1_"+str(count)+" to -> " + i).strip("\n")
 
 # for i in xrange(0,20):
