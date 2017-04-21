@@ -1,4 +1,4 @@
 # BMEResearch
 Current stage of the project: 
-1. grep the TE positions and match them with set_5_8 and see if it gets the first entry out. 
-2. make sure this part really works before downloading the rest of the SRR files. 
+1. Make sure that the trans. elements are being checked and find a way to create a range to check the TE elements with the breakpoints. 
+2. TRY TO MAKE A PAIR OF CLUSTERS IN ONE CLASS OBJECT.
