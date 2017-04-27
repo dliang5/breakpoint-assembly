@@ -46,6 +46,7 @@ class b_location:
         self.high_position1 = high_position1 
         self.high_position2 = high_position2 
         self.size = size 
+        self.status = False
     
     # class functions 
     def getsamflag(self): 
@@ -64,6 +65,10 @@ class b_location:
         return self.index 
     def getSize(self):
         return self.size
+    def convertStatus(self): 
+        self.status = True 
+    def getStatus(self): 
+        return self.status
     def displayInfo(self):
         print " this is the breakpoint here " + str(self.samflag) + " " + self.chrom_ref + " " + str(self.low_position1) + " " + str(self.low_position2) + " " + str(self.high_position1) + " " + str(self.high_position2) 
 """
@@ -81,8 +86,8 @@ write_file = open(write_name, "w")
 # then read in everything of the entire line - class - then compare only the first and second locations 
 #                   ----> check to see if it is within the range tho.  
 """ 
-trans_objects = []
-break_objects = []  
+trans_objects = []  # holds TE elements in class 
+break_objects = []  # holds cluster in class 
 # getting the value of the TE here 
 with open("TE_sites.txt", "r") as f: 
     for line in f: 
@@ -93,9 +98,9 @@ with open("TE_sites.txt", "r") as f:
 
 
 # getting the values of the clusters here from summary_*.txt  
-break_store = [] # this will hold a list of list
-# b_location ( index chrom_ref, posiiton1, position2, )
+break_store = [] # this will hold a list of classes 
 check_sum = 0 
+# opening the file of the summary breakpoints of both low positions and high positions 
 with open(break_point_name, "r") as f: 
     for line in f: 
         if line in ['\n', '\r\n']:
@@ -105,6 +110,7 @@ with open(break_point_name, "r") as f:
             check_sum += 1 
         else: 
             content = line.split() 
+            # b_location( chrom , samflag , lowpos1, lowpos2, highpos1, highpos2, sizeof cluster)
             decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
             break_objects.append(decoy) 
             # decoy.displayInfo() 
@@ -134,38 +140,33 @@ with open("DmelMapTable.txt", 'r') as f:
             # print temp_dmel_store
         else: 
             continue 
-# for i in dmel_holder: 
-#     print i[0], i[1], i[2]  
-"""check the values in yes_number to the dmel table to further more validate the results """ 
-"""-----------------------------------------------------------------------------------==="""
+
 """
 # searches and compare the TE element with the cluster and see if it is close
 # if one part matches then count, if at least like 50 - 80 % matches then add it to the list
 """
-nope_number = []
-yes_number = []
-new_yes_number = [] # this is me being lazy and appending the clusters that was checked by dmel table. 
-print "bob" 
-check_counter = 0 # in case if one matches a transposeable element, remove the corresponding cluster as it's kind of useless now. 
+nope_number = [] # clusters that did not pass the TE elements 
+yes_number = [] # clusters that did pass the TE elements 
+new_yes_number = [] # being lazy - checking dmel with yes_number and writing to new_yes_number  
+print "bob" # rand cout statement 
+
 counter = 0 # this is to keep track of the number of reads within TE at least 80% 
 checklist = False 
-for index, rand_list in enumerate(break_store): # getting each individual list
-    for t_index, entry in enumerate(rand_list): # iterating individually through chosen list
+for index, cur_list in enumerate(break_store): # getting each individual list
+    for t_index, entry in enumerate(cur_list): # iterating individually through chosen list
         in_transrange = False 
         for trans in trans_objects: # iterating through TE now 
             if entry.getchrom_ref() == trans.getchrom_ref(): # making sure the location is the same
             # somehow set_5_8 goes through. 
                 if trans.getposition1() <= entry.getlowposition1() <= trans.getposition2() or trans.getposition1() <= entry.gethighposition1() <= trans.getposition2()\
                  or trans.getposition1() <= entry.getlowposition2() <= trans.getposition2() or trans.getposition1() <= entry.gethighposition2() <= trans.getposition2():
-                    counter+=1
-                if(counter >= entry.getSize()*.8 ):
-                    cout << entry.displayInfo() << endl ; 
-                    in_transrange = True 
+                    in_transrange = True
+                    break
         if (in_transrange == True):
-            nope_number.append(rand_list)
+            nope_number.append(cur_list)
             break 
     if in_transrange == False:
-        yes_number.append(rand_list)
+        yes_number.append(cur_list)
 
 
 # compare dmel table to potential breakpoints
@@ -182,12 +183,12 @@ for t_index,j in enumerate(yes_number):
                         if (str(temp_line[0]) == i.getchrom_ref()):
                             if (int(temp_line[1]) <= i.getlowposition2() <= int(temp_line[2]) or int(temp_line[1]) <= i.gethighposition2() <= int(temp_line[2])):
                             # if (i.getlowposition1() <= int(dmel_line[1]) <= i.gethighposition1() or i.getlowposition2() <= int(dmel_line[1]) <= i.gethighposition2()):
-                                write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + '\n' ) 
-                                #write_file.write("\n")
-                                # if ((count+1) % 2 == 0):
-                                #     write_file.write("\n")
+                                i.convertStatus()
+                                write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) +"\t"+ str(i.getStatus()) + '\n' ) 
                                 break # done with this position if everything matches 
-
+                    if i.getStatus() == False: 
+                            write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + "\t"+ str(i.getStatus()) + '\n' ) 
+                            break
 # i can just read the new file and create the cluster based on that. 
 # open the "summary-<SRR>-breakpoints" to get the needed clusters to print out in <SRR>-breakpoints
 write_file.close() 
@@ -198,8 +199,9 @@ with open(write_name, 'r') as f:
         decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
         temp_new_yes_number.append(decoy) 
         new_yes_number.append(temp_new_yes_number)
-        # print content[0], content[1], content[2], content[3], content[4], content[5], content[6], content[7]                    
-    
+        # print content[0], content[1], content[2], content[3], content[4], content[5], content[6], content[7]
+  
+                        
 """ writing a file of the actual reads based on the exisiting summary clusters
 this will also check for the Dmel or the theoretical breakpoints here as well 
 """
@@ -220,7 +222,7 @@ with open(read_file) as f:
                 if content[0] == str( j.getindex() ): 
                     # start writing it 
                     writing.write(line)
-		    writing.write("\n") 
+		    # writing.write("\n") 
                     break  
                     
                 
