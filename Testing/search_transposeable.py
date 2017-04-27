@@ -73,9 +73,9 @@ it calls reads summary-ZI213-result
 """
 print 'Argument List:', str(sys.argv)
 name = str(sys.argv).split(" ") 
-write_name = "summary-"+name[1].lstrip("'").rstrip("']")+"-breakpoints" # this is getting the name of the file being written into with actual breakpoints that pass the transponseable element test 
+summaryBreakpoints = "summary-"+name[1].lstrip("'").rstrip("']")+"-breakpoints" # this is getting the name of the file being written into with actual breakpoints that pass the transponseable element test 
 break_point_name = "summary-"+name[1].lstrip("'").rstrip("']")+"-result" 
-write_file = open(write_name, "w")  
+writeSummary = open(summaryBreakpoints, "w")  
 """
 # check out the tranposeable elements here and store them into a list or whatever that is easier to do so 
 # then read in everything of the entire line - class - then compare only the first and second locations 
@@ -142,9 +142,9 @@ with open("DmelMapTable.txt", 'r') as f:
 # searches and compare the TE element with the cluster and see if it is close
 # if one part matches then count, if at least like 50 - 80 % matches then add it to the list
 """
-nope_number = []
-yes_number = []
-new_yes_number = [] # this is me being lazy and appending the clusters that was checked by dmel table. 
+transMatched = []
+goodBreakpoints = []
+sumBreakpoints = [] # this is me being lazy and appending the clusters that was checked by dmel table. 
 print "bob" 
 check_counter = 0 # in case if one matches a transposeable element, remove the corresponding cluster as it's kind of useless now. 
 counter = 0 # this is to keep track of the number of reads within TE at least 80% 
@@ -162,15 +162,15 @@ for index, rand_list in enumerate(break_store): # getting each individual list
                     cout << entry.displayInfo() << endl ; 
                     in_transrange = True 
         if (in_transrange == True):
-            nope_number.append(rand_list)
+            transMatched.append(rand_list)
             break 
     if in_transrange == False:
-        yes_number.append(rand_list)
+        goodBreakpoints.append(rand_list)
 
 
 # compare dmel table to potential breakpoints
 temp_dmel_holder = dmel_holder[:]
-for t_index,j in enumerate(yes_number): 
+for t_index,j in enumerate(goodBreakpoints): 
     for count, i in enumerate(j):
         # print i.displayInfo()
         for index, dmel_line in enumerate(dmel_holder): 
@@ -182,24 +182,37 @@ for t_index,j in enumerate(yes_number):
                         if (str(temp_line[0]) == i.getchrom_ref()):
                             if (int(temp_line[1]) <= i.getlowposition2() <= int(temp_line[2]) or int(temp_line[1]) <= i.gethighposition2() <= int(temp_line[2])):
                             # if (i.getlowposition1() <= int(dmel_line[1]) <= i.gethighposition1() or i.getlowposition2() <= int(dmel_line[1]) <= i.gethighposition2()):
-                                write_file.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + '\n' ) 
-                                #write_file.write("\n")
-                                # if ((count+1) % 2 == 0):
-                                #     write_file.write("\n")
+                                writeSummary.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + '\n' ) 
                                 break # done with this position if everything matches 
 
-# i can just read the new file and create the cluster based on that. 
-# open the "summary-<SRR>-breakpoints" to get the needed clusters to print out in <SRR>-breakpoints
-write_file.close() 
-with open(write_name, 'r') as f:  
+writeSummary.close() 
+               
+recurrenceObjects = [] 
+# getting the recurrence reads here . 
+with open("recurrence.csv", 'r') as recurFile: 
+    for entry in recurFile:
+        content = [x.strip() for x in entry.split(" ,")]
+        decoy = location(content[0], int(content[1]), int(content[2]))
+        recurrenceObjects.append(decoy) 
+
+# comparing the recurrence to the current potential breakpoints before going any further. 
+with open(summaryBreakpoints, 'r') as f:  
     for i in f: 
-        temp_new_yes_number = [] 
+        temp_sumBreakpoints = [] 
         content = [x.strip() for x in i.split("\t")]
         decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
-        temp_new_yes_number.append(decoy) 
-        new_yes_number.append(temp_new_yes_number)
-        # print content[0], content[1], content[2], content[3], content[4], content[5], content[6], content[7]                    
-    
+        for recurEntry in recurrenceObjects: 
+            if decoy.getchrom_ref() != recurEntry.getchrom_ref(): 
+                continue
+            else: 
+                if( (recurEntry.getposition1-1000 <= decoy.getlowposition1() <= recurEntry.getposition2+1000) or (recurEntry.getposition1-1000 <= decoy.getlowposition2() <= recurEntry.getposition2+1000 ):
+                    if( (recurEntry.getposition1-1000 <= decoy.gethighposition1() <= recurEntry.getposition2+1000) or (recurEntry.getposition1-1000 <= decoy.gethighposition2() <= recurEntry.getposition2+1000 ):
+                        continue 
+                    else:       
+                        temp_sumBreakpoints.append(decoy) 
+                        sumBreakpoints.append(temp_sumBreakpoints)
+        
+
 """ writing a file of the actual reads based on the exisiting summary clusters
 this will also check for the Dmel or the theoretical breakpoints here as well 
 """
@@ -215,7 +228,7 @@ with open(read_file) as f:
         if len(content) != 7: # to avoid getting an error for index out of range due to the empty line separating them? 
             continue 
         #content = line.split("\t")
-        for i in new_yes_number: 
+        for i in sumBreakpoints: 
             for j in i: 
                 if content[0] == str( j.getindex() ): 
                     # start writing it 
