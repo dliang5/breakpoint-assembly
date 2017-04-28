@@ -18,7 +18,6 @@ inputFile = "RAL-README"
 writeFile = open(inputFile, 'a') 
 
 with open("TableS1_individuals.csv", 'r') as poolFile: 
-    sp.Popen("mkdir RAL", shell=True, executable='/bin/bash')
     for line in poolFile: 
         content = [x.strip() for x in line.split(",")]
         setName = content[0] 
@@ -31,17 +30,17 @@ with open("TableS1_individuals.csv", 'r') as poolFile:
             if ( srrTwice[:2] == checkTwice): 
                 SRRname = content[3]
                 SRRname1 = content[4] 
-                print (setName,content[3], content[4])
+                print ("{0} {1} {2}".format(setName, SRRname, SRRname1))
                 path = "qsub running3.sh " + setName + " " + SRRname + " " + SRRname1
                 sp.Popen(path, shell=True, executable= '/bin/bash')
                 writeFile.write("{0} {1} {2}\n".format(setName, SRRname, SRRname1))
                     
             else: 
                 SRRname = content[3] 
-                path = "qsub running3.sh " + setName+ " " +SRRname  + " " + 0
+                path = "qsub running3.sh " + setName+ " " +SRRname  + " " + str(0)
                 # goes to the first one
-                print (setName, content[3])
+                print ("{0} {1}".format(setName, SRRname))
                 sp.Popen(path, shell=True, executable='/bin/bash')
                 writeFile.write("{0} {1}\n".format(setName, SRRname)) 
-
+print ("done") 
 writeFile.close()

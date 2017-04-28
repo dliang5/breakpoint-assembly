@@ -47,6 +47,7 @@ class b_location:
         self.high_position2 = high_position2 
         self.size = size 
         self.status = False
+        self.unKnownInversion = False # this is mainly to return True if the inversion not discovered by Russ is found
     
     # class functions 
     def getsamflag(self): 
@@ -67,8 +68,12 @@ class b_location:
         return self.size
     def convertStatus(self): 
         self.status = True 
+    def convertKnown(self): 
+        self.unKnownInversion = True
     def getStatus(self): 
         return self.status
+    def getKnown(self): 
+        return self.unKnownInversion
     def displayInfo(self):
         print " this is the breakpoint here " + str(self.samflag) + " " + self.chrom_ref + " " + str(self.low_position1) + " " + str(self.low_position2) + " " + str(self.high_position1) + " " + str(self.high_position2) 
 """
@@ -155,9 +160,18 @@ with open("recurrence.csv", 'r') as recurFile:
 knownInversion = [] 
 with open("knownInversion.txt", 'r') as f: 
     for line in f: 
-        content = [x.strip() for x in line.split("\t")]
+        content = [x.strip() for x in line.split(" ")]
         decoy = location(content[1], int(content[4]), int(content[5]))
         knownInversion.append(decoy) 
+
+# this is "inversion regions" not discovered by Russ.
+notKnownInversion = [] 
+with open("notKnownInversion.txt", 'r') as f: 
+    for line in f: 
+        content = [x.strip() for x in line.split(" ")]
+        decoy = location(content[1], int(content[2]), int(content[3]))
+        notKnownInversion.append(decoy) 
+
 """
 # searches and compare the TE element with the cluster and see if it is close
 # if one part matches then count, if at least like 50 - 80 % matches then add it to the list
@@ -207,6 +221,7 @@ for t_index,j in enumerate(yes_number):
                     if i.getStatus() == False: 
                             writeBreakpoints.write(str(i.getindex()) + "\t" + str(i.getsamflag()) + "\t" + i.getchrom_ref() + "\t" + str(i.getlowposition1()) + "\t" + str(i.getlowposition2()) + "\t" + str(i.gethighposition1()) + "\t" + str(i.gethighposition2())+ "\t" + str(i.getSize()) + "\t"+ str(i.getStatus()) + '\n' ) 
                             break
+
 # i can just read the new file and create the cluster based on that. 
 # open the "summary-<SRR>-breakpoints" to get the needed clusters to print out in <SRR>-breakpoints
 writeBreakpoints.close() 
@@ -225,28 +240,39 @@ with open(summaryBreakpoints, 'r') as f:
 
                     if entry.getposition2()-15000 < decoy.getlowposition2() < entry.getposition2()+15000 or\
                     entry.getposition2()-15000 < decoy.gethighposition2() < entry.getposition2()+150000: 
-                        print("recurrence check -> {0} {1} {2} {3}".format(decoy.getlowposition1(), decoy.getlowposition2(), decoy.gethighposition1(), decoy.gethighposition2()))
+                        # print("recurrence check -> {0} {1} {2} {3}".format(decoy.getlowposition1(), decoy.getlowposition2(), decoy.gethighposition1(), decoy.gethighposition2()))
                         badValue = True
                         break 
         if(badValue == False): 
-            print("not recurrence -> {0} {1} {2} {3}".format(decoy.getlowposition1(), decoy.getlowposition2(), decoy.gethighposition1(), decoy.gethighposition2()))
+            # print("not recurrence -> {0} {1} {2} {3}".format(decoy.getlowposition1(), decoy.getlowposition2(), decoy.gethighposition1(), decoy.gethighposition2()))
             # checking the known inversion points here
             for known in knownInversion: 
                 if known.getchrom_ref() == decoy.getchrom_ref():
                     if known.getposition1()-1000 < decoy.getlowposition1() <known.getposition1()+1000 or \
                     known.getposition1()-1000 < decoy.gethighposition1() < known.getposition1()+1000: 
-                        if known.getposition2()-1000 < decoy.getlowposition2() < known.getposition2()+1000 or \ 
+                        if known.getposition2()-1000 < decoy.getlowposition2() < known.getposition2()+1000 or \
                         known.getposition2()-1000 < decoy.gethighposition2() < known.getposition2()+1000: 
                             alrInversion = True
+                            break
+
             if alrInversion == False: 
+                # checking to see if the Inversion are known or not.
+                for notKnown in notKnownInversion: 
+                    if notKnown.getchrom_ref() == decoy.getchrom_ref(): 
+                        if notKnown.getposition1()-1000 < decoy.getlowposition1() <notKnown.getposition1()+1000 or \
+                        notKnown.getposition1()-1000 < decoy.gethighposition1() < notKnown.getposition1()+1000: 
+                            if notKnown.getposition2()-1000 < decoy.getlowposition2() < notKnown.getposition2()+1000 or \
+                            notKnown.getposition2()-1000 < decoy.gethighposition2() < notKnown.getposition2()+1000: 
+                                decoy.convertKnown() 
+                                break 
                 newBreakEntry.append(decoy) 
                 newBreakStore.append(newBreakEntry)
 
 with open(summaryBreakpoints, 'w') as f: 
     for i in newBreakStore: 
         for j in i: 
-            j.displayInfo()
-            f.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format( j.getsamflag(), j.getchrom_ref(), j.getlowposition1(), j.getlowposition2(), j.gethighposition1(), j.gethighposition2() ))
+            # j.displayInfo()
+            f.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format( j.getsamflag(), j.getchrom_ref(), j.getlowposition1(), j.getlowposition2(), j.gethighposition1(), j.gethighposition2(), j.getKnown() ))
 """ writing a file of the actual reads based on the exisiting summary clusters
 this will also check for the Dmel or the theoretical breakpoints here as well 
 """

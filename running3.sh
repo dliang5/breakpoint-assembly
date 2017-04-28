@@ -48,6 +48,8 @@ else
     python search_transposeable.py $setName
 fi 
 
+#cleaning up here aka removing all the sam and fastq files 
+rm $name1Fastq1 $name1Fastq2 $setName $fastq1 $fastq2 $samName
 
 # if [-s $breakPointFile ]
 # then 
