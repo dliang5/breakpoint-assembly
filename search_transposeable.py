@@ -147,12 +147,14 @@ with open("DmelMapTable.txt", 'r') as f:
 """
 nope_number = [] # clusters that did not pass the TE elements 
 yes_number = [] # clusters that did pass the TE elements 
-new_yes_number = [] # being lazy - checking dmel with yes_number and writing to new_yes_number  
+newBreakStore = [] # being lazy - checking dmel with yes_number and writing to newBreakStore  
+newBadBreaks = []
 print "bob" # rand cout statement 
 
 counter = 0 # this is to keep track of the number of reads within TE at least 80% 
 checklist = False 
 for index, cur_list in enumerate(break_store): # getting each individual list
+    in_transrange = False
     for t_index, entry in enumerate(cur_list): # iterating individually through chosen list
         in_transrange = False 
         for trans in trans_objects: # iterating through TE now 
@@ -202,7 +204,8 @@ for t_index,j in enumerate(yes_number):
 writeBreakpoints.close() 
 with open(summaryBreakpoints, 'r') as f:  
     for i in f: 
-        temp_new_yes_number = [] 
+        badValue = False
+        newBreakEntry = [] 
         content = [x.strip() for x in i.split("\t")]
         decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
         for entry in recurrenceObjects: 
@@ -213,18 +216,29 @@ with open(summaryBreakpoints, 'r') as f:
 
                     if entry.getposition2()-15000 < decoy.getlowposition2() < entry.getposition2()+15000 or\
                     entry.getposition2()-15000 < decoy.gethighposition2() < entry.getposition2()+150000: 
-                        print("this is the ones that went through {0} {1} {2} {3}".format(decoy.getlowposition1(), decoy.getlowposition2(), decoy.gethighposition1(), decoy.gethighposition2()))
-        temp_new_yes_number.append(decoy) 
-        new_yes_number.append(temp_new_yes_number)
-        # print content[0], content[1], content[2], content[3], content[4], content[5], content[6], content[7]
-  
-                        
+                        print("recurrence check -> {0} {1} {2} {3}".format(decoy.getlowposition1(), decoy.getlowposition2(), decoy.gethighposition1(), decoy.gethighposition2()))
+                        badValue = True
+                        break 
+        if(badValue == False): 
+            print("not recurrence -> {0} {1} {2} {3}".format(decoy.getlowposition1(), decoy.getlowposition2(), decoy.gethighposition1(), decoy.gethighposition2()))
+            newBreakEntry.append(decoy) 
+            newBreakStore.append(newBreakEntry)
+
+with open(summaryBreakpoints, 'w') as f: 
+    for i in newBreakStore: 
+        for j in i: 
+            j.displayInfo()
+            f.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format( j.getsamflag(), j.getchrom_ref(), j.getlowposition1(), j.getlowposition2(), j.gethighposition1(), j.gethighposition2() ))
 """ writing a file of the actual reads based on the exisiting summary clusters
 this will also check for the Dmel or the theoretical breakpoints here as well 
 """
 goodReadFile = "good_"+name[1].lstrip("'").rstrip("']")+"-result"
 detailedBreakpoints = name[1].lstrip("'").rstrip("']")+"-breakpoints"
 writeDetailedBreakpoints = open(detailedBreakpoints, 'w')
+
+for i in newBreakStore: 
+    for j in i: 
+        j.displayInfo() 
 
 # this is opening good_<SRR>-results which is has the full info on the clusters
 # why is it printing 10 of each element in a cluster? 
@@ -234,7 +248,7 @@ with open(goodReadFile) as f:
         if len(content) != 7: # to avoid getting an error for index out of range due to the empty line separating them? 
             continue 
         #content = line.split("\t")
-        for i in new_yes_number: 
+        for i in newBreakStore: 
             for j in i: 
                 if content[0] == str( j.getindex() ): 
                     # start writeDetailedBreakpoints it 
