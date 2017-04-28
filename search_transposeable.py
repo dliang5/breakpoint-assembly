@@ -141,6 +141,23 @@ with open("DmelMapTable.txt", 'r') as f:
         else: 
             continue 
 
+# getting the recurrence reads here for comparsion
+recurrenceObjects = [] 
+# getting the recurrence reads here . 
+with open("recurrence.csv", 'r') as recurFile: 
+    for entry in recurFile:
+        content = [x.strip() for x in entry.split(",")]
+        decoy = location(content[0], int(content[1]), int(content[2]))
+        recurrenceObjects.append(decoy) 
+
+# this is from russ's and University of South Carolina's papers 
+# this is mainly the known inversion discovered by Russ. 
+knownInversion = [] 
+with open("knownInversion.txt", 'r') as f: 
+    for line in f: 
+        content = [x.strip() for x in line.split("\t")]
+        decoy = location(content[1], int(content[4]), int(content[5]))
+        knownInversion.append(decoy) 
 """
 # searches and compare the TE element with the cluster and see if it is close
 # if one part matches then count, if at least like 50 - 80 % matches then add it to the list
@@ -170,15 +187,6 @@ for index, cur_list in enumerate(break_store): # getting each individual list
     if in_transrange == False:
         yes_number.append(cur_list)
 
-# getting the recurrence reads here for comparsion
-recurrenceObjects = [] 
-# getting the recurrence reads here . 
-with open("recurrence.csv", 'r') as recurFile: 
-    for entry in recurFile:
-        content = [x.strip() for x in entry.split(",")]
-        decoy = location(content[0], int(content[1]), int(content[2]))
-        recurrenceObjects.append(decoy) 
-
 # compare dmel table to potential breakpoints
 temp_dmel_holder = dmel_holder[:]
 for t_index,j in enumerate(yes_number): 
@@ -205,6 +213,7 @@ writeBreakpoints.close()
 with open(summaryBreakpoints, 'r') as f:  
     for i in f: 
         badValue = False
+        alrInversion = False 
         newBreakEntry = [] 
         content = [x.strip() for x in i.split("\t")]
         decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
@@ -221,8 +230,17 @@ with open(summaryBreakpoints, 'r') as f:
                         break 
         if(badValue == False): 
             print("not recurrence -> {0} {1} {2} {3}".format(decoy.getlowposition1(), decoy.getlowposition2(), decoy.gethighposition1(), decoy.gethighposition2()))
-            newBreakEntry.append(decoy) 
-            newBreakStore.append(newBreakEntry)
+            # checking the known inversion points here
+            for known in knownInversion: 
+                if known.getchrom_ref() == decoy.getchrom_ref():
+                    if known.getposition1()-1000 < decoy.getlowposition1() <known.getposition1()+1000 or \
+                    known.getposition1()-1000 < decoy.gethighposition1() < known.getposition1()+1000: 
+                        if known.getposition2()-1000 < decoy.getlowposition2() < known.getposition2()+1000 or \ 
+                        known.getposition2()-1000 < decoy.gethighposition2() < known.getposition2()+1000: 
+                            alrInversion = True
+            if alrInversion == False: 
+                newBreakEntry.append(decoy) 
+                newBreakStore.append(newBreakEntry)
 
 with open(summaryBreakpoints, 'w') as f: 
     for i in newBreakStore: 
