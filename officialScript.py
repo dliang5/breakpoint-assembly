@@ -15,7 +15,7 @@ with open ("RAL-README", 'w') as f:
     f.write("this is here to create the RAL file and store all of the corresponding information in there")
     
 inputFile = "RAL-README" 
-writeFile = open(inputFile, 'a') 
+writeFile = open(inputFile, 'w') 
 
 with open("TableS1_individuals.csv", 'r') as poolFile: 
     for line in poolFile: 
@@ -25,22 +25,16 @@ with open("TableS1_individuals.csv", 'r') as poolFile:
             # no need for other yet
             continue 
         else: 
-            checkTwice = 'SR'
-            srrTwice = content[4]  
-            if ( srrTwice[:2] == checkTwice): 
-                SRRname = content[3]
-                SRRname1 = content[4] 
-                print ("{0} {1} {2}".format(setName, SRRname, SRRname1))
-                path = "qsub running3.sh " + setName + " " + SRRname + " " + SRRname1
-                sp.Popen(path, shell=True, executable= '/bin/bash')
-                writeFile.write("{0} {1} {2}\n".format(setName, SRRname, SRRname1))
-                    
-            else: 
-                SRRname = content[3] 
-                path = "qsub running3.sh " + setName+ " " +SRRname  + " " + str(0)
-                # goes to the first one
-                print ("{0} {1}".format(setName, SRRname))
-                sp.Popen(path, shell=True, executable='/bin/bash')
-                writeFile.write("{0} {1}\n".format(setName, SRRname)) 
+            counter = 0 
+            checkTwice = 'SRX'
+            
+            defaultSRRname = 'qsub running3.sh {0} '.format(setName) 
+            for position, entry in enumerate(content): 
+                if entry[:3] == "SRX": 
+                    defaultSRRname = defaultSRRname + "{0} ".format(entry.strip('"'))
+            # print (defaultSRRname)
+            sp.Popen(defaultSRRname, shell=True, exectuable= '/bin/bash')
+            writeFile.write(defaultSRRname + "\n")
+
 print ("done") 
 writeFile.close()
