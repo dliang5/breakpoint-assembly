@@ -1,3 +1,4 @@
+
 # a simple gene search
 import sys
 from random import randint 
@@ -66,6 +67,7 @@ def checkGeneList(selectedPos, gene):
     if gene.getpos1() <= selectedPos.getpos() <= gene.getpos2():
         selectedPos.setGene(gene.getpos1()) # keeping an easy number to compare again 
 
+# starting point here for the rest of the script ---------------------
 chromList = ["3L", "2R", "3R", "2L", "X"]
 chromDict = {"3R": 32079331, "3L": 28110227, "2R":25286936, 
              "X": 23543271, "2L": 23513712}
@@ -100,36 +102,35 @@ with open("dmel-gene.txt", 'r') as geneEntry:
         geneClass = gene(content[0], content[3], content[4])
         geneList.append(geneClass)
         # geneClass.display() # testing to see if everything went through as planned.   
+for i in range(1000):
+    hit = 0 
+    count = 0 
+    already_list = set()
+    # this is where the permutation test begins.
+    for invEntry in inversionList: 
+        low1 = pos(randint(0, chromDict[invEntry.getChromRef()] - invEntry.gethpos2()))
+        low2 = pos(low1.getpos() + invEntry.getoffset() )
+        high1 = pos(low1.getpos() + invEntry.gethighoffset())
+        high2 = pos(low1.getpos() + invEntry.gethpos2() )
         
+        # match the gene and get the first position of said gene
+        # gotta check the entire gene list and keep on adding it up
+        for gene in geneList: 
+            checkGeneList(low1, gene) 
+            checkGeneList(low2, gene) 
+            checkGeneList(high1, gene) 
+            checkGeneList(high2, gene) 
 
-for invEntry in inversionList: 
-    low1 = pos(randint(0, chromDict[invEntry.getChromRef()] - invEntry.gethpos2())) 
-    low2 = pos(low1.getpos() + invEntry.getoffset() )
-    high1 = pos(low1.getpos() + invEntry.gethighoffset())
-    high2 = pos(low1.getpos() + invEntry.gethpos2() )
-    
-    # match the gene and get the first position of said gene
-    # gotta check the entire gene list and keep on adding it up
-    for gene in geneList: 
-        checkGeneList(low1, gene) 
-        checkGeneList(low2, gene) 
-        checkGeneList(high1, gene) 
-        checkGeneList(high2, gene) 
-
-        # comparing to see if they have matching gene positions or not
-        # print("{} vs {}".format(low1.getgene(), low2.getgene()))
-        # print("{} vs {}".format(high1.getgene(), high2.getgene()))
-        if(low1.getgene() == low2.getgene()): 
-            hit += 1 
-            count += 1 
-        else: 
-            count += 1 
-        if (high1.getgene() == high2.getgene()): 
-            hit += 1
-            count += 1 
-        else: 
-            count += 1 
-        
-
-print("hit count is {}".format(hit))
-print("total in general {}".format(count))
+            if low1.getgene() in already_list or low2.getgene() in already_list or high1.getgene() in already_list or high2.getgene() in already_list:
+                continue
+            # comparing to see if they have matching gene positions or not
+            # print("{} vs {}".format(low1.getgene(), low2.getgene()))
+            # print("{} vs {}".format(high1.getgene(), high2.getgene()))
+            if(low1.getgene() == low2.getgene()): 
+                already_list.add(low1.getgene())
+                hit += 1 
+            if (high1.getgene() == high2.getgene()): 
+                already_list.add(high1.getgene())
+                hit += 1
+            count += 2
+    print("hit count is {}".format(hit))
