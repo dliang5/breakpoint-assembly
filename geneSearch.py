@@ -1,4 +1,16 @@
+""" Permutation test for rare inversion breakpoints with common inversion breakpoints as the null hypothesis
+The main idea is that rare inversion should break or "appear" more often than common inversion breakpoints as 
+they are deletroious based on observation. 
 
+This program reads both rare and common inversion breakpoints data and the full gene expression list. 
+For each breakpoint, it will randomly select a position within its respective chromosome arm
+then it will compare if there was an actual match at that location on the gene list up to 1000+ iterations. 
+If both forward and reverse match (both low and high positions) then it will count.
+
+Expectation: the percentage is higher on rare than common
+             or - calculating the means for all of the iterations and getting the differences
+             if it is less than 5% p-value than we are good to go.
+"""
 # a simple gene search
 import sys
 from random import randint 
@@ -15,7 +27,7 @@ class inversion:
 
     def getlpos1(self): 
         return (self.lpos1)
-    def getlpos2(self): 
+    def getlpos2(self):
         return (self.lpos2) 
     def gethpos1(self): 
         return (self.hpos1)
@@ -77,6 +89,25 @@ hit = 0
 count = 0 
 # parsing the inversion file out
 with open("Breakpoints.csv", 'r') as inversionEntry:
+    # getting rare inversion breakpoints here
+    while True:
+        entry1 = inversionEntry.readline()
+        if(entry1.split(",")[0] == "Inversion "): continue # getting rid of the Inversion line and restarting
+        entry2 = inversionEntry.readline()
+        if not entry2 or "in betweens" == entry1.split(",")[0] == "in betweens": break
+
+        content1 = entry1.split(",")
+        content2 = entry2.split(",")
+        if content1[0] == "In between": # not going to the common inversion, stopping here
+            break 
+        chrom = (content1[0].split("("))[1].split(")")[0]
+        # print (content1)
+        # print (content2)
+        # print(chrom) 
+        invClass = inversion(chrom, content1[1], content1[2], content2[1], content2[2], content1[3], content2[3] )
+        inversionList.append(invClass)
+
+    # getting common inversion breakpoints here 
     while True:
         entry1 = inversionEntry.readline()
         if(entry1.split(",")[0] == "Inversion "): continue # getting rid of the Inversion line and restarting
