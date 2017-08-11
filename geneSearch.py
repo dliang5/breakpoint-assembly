@@ -87,44 +87,27 @@ inversionList = list() # storing all imports here
 geneList = list()
 hit = 0 
 count = 0 
-# parsing the inversion file out
+# parsing the inversion file out for both common and rare inversions
 with open("Breakpoints.csv", 'r') as inversionEntry:
     # getting rare inversion breakpoints here
-    while True:
-        entry1 = inversionEntry.readline()
-        if(entry1.split(",")[0] == "Inversion "): continue # getting rid of the Inversion line and restarting
-        entry2 = inversionEntry.readline()
-        if not entry2 or "in betweens" == entry1.split(",")[0] == "in betweens": break
-
-        content1 = entry1.split(",")
-        content2 = entry2.split(",")
-        if content1[0] == "In between": # not going to the common inversion, stopping here
-            break 
-        chrom = (content1[0].split("("))[1].split(")")[0]
-        # print (content1)
-        # print (content2)
-        # print(chrom) 
-        invClass = inversion(chrom, content1[1], content1[2], content2[1], content2[2], content1[3], content2[3] )
-        inversionList.append(invClass)
-
-    # getting common inversion breakpoints here 
-    while True:
-        entry1 = inversionEntry.readline()
-        if(entry1.split(",")[0] == "Inversion "): continue # getting rid of the Inversion line and restarting
-        entry2 = inversionEntry.readline()
-        if not entry2 or "in betweens" == entry1.split(",")[0] == "in betweens": break
-
-        content1 = entry1.split(",")
-        content2 = entry2.split(",")
-        if content1[0] == "In between": # not going to the common inversion, stopping here
-            break 
-        chrom = (content1[0].split("("))[1].split(")")[0]
-        # print (content1)
-        # print (content2)
-        # print(chrom) 
-        invClass = inversion(chrom, content1[1], content1[2], content2[1], content2[2], content1[3], content2[3] )
-        inversionList.append(invClass)
-
+    for times in range(2):
+        currentList = list() # getting the first list for rare inversion
+        while True:
+            entry1 = inversionEntry.readline()
+            if entry1.split(",")[0] == "Inversion ": continue # getting rid of the Inversion line and restarting 
+            if "In between" in entry1: break # moving on to the common inversions
+            entry2 = inversionEntry.readline()
+            if not entry2 or "in betweens" == entry1.split(",")[0] == "in betweens": break
+            content1 = entry1.split(",")
+            content2 = entry2.split(",")
+            if content1[0] == "In between" or content1[0] == "Unique set": break 
+            # print("{}\n{}".format(entry1.strip("\n"), entry2.strip("\n")))
+            chrom = (content1[0].split("("))[1].split(")")[0]
+            # print("chrom = {} lp = {} lp = {} hp = {} hp = {} of = {} hof = {}".format(chrom, content1[1], content1[2], content2[1], content2[2], content1[3], content2[3]))
+            invClass = inversion(chrom, content1[1], content1[2], content2[1], content2[2], content1[3], content2[3] )
+            currentList.append(invClass)
+        inversionList.append(currentList)
+        
 # parsing the gene file out here
 with open("dmel-gene.txt", 'r') as geneEntry:
     for line in geneEntry:
