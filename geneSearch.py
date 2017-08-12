@@ -107,7 +107,7 @@ with open("Breakpoints.csv", 'r') as inversionEntry:
             invClass = inversion(chrom, content1[1], content1[2], content2[1], content2[2], content1[3], content2[3] )
             currentList.append(invClass)
         inversionList.append(currentList)
-        
+
 # parsing the gene file out here
 with open("dmel-gene.txt", 'r') as geneEntry:
     for line in geneEntry:
@@ -116,35 +116,43 @@ with open("dmel-gene.txt", 'r') as geneEntry:
         geneClass = gene(content[0], content[3], content[4])
         geneList.append(geneClass)
         # geneClass.display() # testing to see if everything went through as planned.   
-for i in range(1000):
-    hit = 0 
-    count = 0 
-    already_list = set()
-    # this is where the permutation test begins.
-    for invEntry in inversionList: 
-        low1 = pos(randint(0, chromDict[invEntry.getChromRef()] - invEntry.gethpos2()))
-        low2 = pos(low1.getpos() + invEntry.getoffset() )
-        high1 = pos(low1.getpos() + invEntry.gethighoffset())
-        high2 = pos(low1.getpos() + invEntry.gethpos2() )
-        
-        # match the gene and get the first position of said gene
-        # gotta check the entire gene list and keep on adding it up
-        for gene in geneList: 
-            checkGeneList(low1, gene) 
-            checkGeneList(low2, gene) 
-            checkGeneList(high1, gene) 
-            checkGeneList(high2, gene) 
 
-            if low1.getgene() in already_list or low2.getgene() in already_list or high1.getgene() in already_list or high2.getgene() in already_list:
-                continue
-            # comparing to see if they have matching gene positions or not
-            # print("{} vs {}".format(low1.getgene(), low2.getgene()))
-            # print("{} vs {}".format(high1.getgene(), high2.getgene()))
-            if(low1.getgene() == low2.getgene()): 
-                already_list.add(low1.getgene())
-                hit += 1 
-            if (high1.getgene() == high2.getgene()): 
-                already_list.add(high1.getgene())
-                hit += 1
-            count += 2
-    print("hit count is {}".format(hit))
+# this is to store each iteration in their respective spot for mean computation purposes
+meanList = list()
+# permutation test here. Iterating at the min. 1000 times.
+for j in range(2):
+    currentMeanList = list() # obviously worded to hold the current list counts
+    for i in range(1000):
+        hit = 0 
+        count = 0 
+        already_list = set()
+        entryMean = list() # holds each iteration mean
+        # this is where the permutation test begins.
+        for invEntry in inversionList[j]: 
+            low1 = pos(randint(0, chromDict[invEntry.getChromRef()] - invEntry.gethpos2()))
+            low2 = pos(low1.getpos() + invEntry.getoffset() )
+            high1 = pos(low1.getpos() + invEntry.gethighoffset())
+            high2 = pos(low1.getpos() + invEntry.gethpos2() )
+            
+            # match the gene and get the first position of said gene
+            # gotta check the entire gene list and keep on adding it up
+            for gene in geneList: 
+                checkGeneList(low1, gene) 
+                checkGeneList(low2, gene) 
+                checkGeneList(high1, gene) 
+                checkGeneList(high2, gene) 
+
+                if low1.getgene() in already_list or low2.getgene() in already_list or high1.getgene() in already_list or high2.getgene() in already_list:
+                    continue
+                # comparing to see if they have matching gene positions or not
+                # print("{} vs {}".format(low1.getgene(), low2.getgene()))
+                # print("{} vs {}".format(high1.getgene(), high2.getgene()))
+                if(low1.getgene() == low2.getgene()): 
+                    already_list.add(low1.getgene())
+                    hit += 1 
+                if (high1.getgene() == high2.getgene()): 
+                    already_list.add(high1.getgene())
+                    hit += 1
+                count += 2
+        entryMean.append(hit/count)
+    meanList.append(currentMeanList) # getting the entire mean for all of them.
