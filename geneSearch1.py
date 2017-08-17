@@ -123,12 +123,16 @@ meanList = list()
 for j in range(2):
     currentMeanList = list() # obviously worded to hold the current list counts
     # remove everything up from this area to keep it back the original code style.
-    for i in range(1000):
+    for i in range(500):
         hit = 0 
-        count = 0 
+        countDict = dict()
+        # setting up so I don't get errors
+        for chrom in ['2R', '3R', '2L', '3L', 'X']:
+            countDict[chrom] = 0
         already_list = set()
         # this is where the permutation test begins.
         for invEntry in inversionList[j]: 
+            # double check this area after implementing the separated chromosome status
             low1 = pos(randint(0, chromDict[invEntry.getChromRef()] - invEntry.gethpos2()))
             low2 = pos(low1.getpos() + invEntry.getoffset() )
             high1 = pos(low1.getpos() + invEntry.gethighoffset())
@@ -147,14 +151,19 @@ for j in range(2):
                 # comparing to see if they have matching gene positions or not
                 # print("{} vs {}".format(low1.getgene(), low2.getgene()))
                 # print("{} vs {}".format(high1.getgene(), high2.getgene()))
+
+                # modifying this area to make it work with dictionary cases in case
                 if(low1.getgene() == low2.getgene()): 
                     already_list.add(low1.getgene())
-                    hit += 1 
+                    countDict[invEntry.getChromRef()] += 1 
                 if (high1.getgene() == high2.getgene()): 
                     already_list.add(high1.getgene())
-                    hit += 1
+                    countDict[invEntry.getChromRef()] += 1
                 count += 2
-        currentMeanList.append(hit/float(count))
-        print("{}.{} -> {}".format(j, i, count))
+        currentMeanList.append(chromDict)
     meanList.append(currentMeanList)
-print("rare - {} common - {}".format(sum(meanList[0])/float(1000), sum(meanList[1])/float(1000)))
+for i in range(2):
+    for chromdict in meanList[i]:
+        for key, value in chromdict.items():
+            print(str(i), key, value)
+        
