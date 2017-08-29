@@ -116,7 +116,7 @@ with open("dmel-gene.txt", 'r') as geneEntry:
         geneClass = gene(content[0], content[3], content[4])
         geneList.append(geneClass)
         # geneClass.display() # testing to see if everything went through as planned.
-
+""" might do some testing as an actual permutation testing here instead of just one solo group """
 # this is to store each iteration in their respective spot for mean computation purposes
 meanList = dict()
 for i in range(2):
