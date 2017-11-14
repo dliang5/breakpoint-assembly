@@ -1,7 +1,0 @@
-[NCBI]
-Data=/opt/bio/ncbi/data/
-
-[mpiBLAST]
-Shared=/afs/cats.ucsc.edu/users/f/dliang5/bio/ncbi/db/
-Local=/tmp/dliang5/db/
-
