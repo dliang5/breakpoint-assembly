@@ -1,7 +1,11 @@
 {
     "files.associations": {
         "ostream": "cpp",
-        "istream": "cpp"
+        "istream": "cpp",
+        "array": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "fstream": "cpp"
     },
     "python.linting.pylintEnabled": false
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import sys 
-""" what : this is a post processing script for the outputs of reading3_1.cpp that searches for potential 
+""" what : this is a post processing script for the outputs of reading3_1.cpp/cluster.py that searches for potential 
            breakpoints more accurately leaving only the recurrences and some other ones.
 
     input : python2.7 search_transposeable.py <name_of_SRR/RAL-name> (ex. ZI213)
@@ -68,8 +68,8 @@ class b_location:
         print " this is the breakpoint here " + str(self.samflag) + " " + self.chrom_ref + " " + str(self.low_position1) + " " + str(self.low_position2) + " " + str(self.high_position1) + " " + str(self.high_position2) 
 
 name = str(sys.argv).split(" ") 
-summaryBreakpoints = "summary-"+name[1].lstrip("'").rstrip("']")+"-breakpoints" # this is getting the name of the file being written into with actual breakpoints that pass the transponseable element test 
-summaryResults = "summary-"+name[1].lstrip("'").rstrip("']")+"-result" 
+summaryBreakpoints = "summary_"+name[1].lstrip("'").rstrip("']")+"-breakpoints" # this is getting the name of the file being written into with actual breakpoints that pass the transponseable element test 
+summaryResults = "summary_"+name[1].lstrip("'").rstrip("']")+"-result" 
 writeBreakpoints = open(summaryBreakpoints, "w")  
 """
 # check out the tranposeable elements here and store them into a list or whatever that is easier to do so 

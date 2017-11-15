@@ -3,7 +3,12 @@
 #$ -j y 
 #$ -S /bin/bash 
 
-""" This is the offical python script file to run the script file on the entire spreadsheet """ 
+""" This is the offical python script file to run the script file on the entire spreadsheet 
+    It reads RAL-README and match the RAL names with the SRR/ERR names in TableS1_individuals.csv with grep
+
+    run : python2.7 officialScript.py 
+    output : qsub running3.sh SRR_name 
+""" 
 
 import os, subprocess as sp, sys
 
