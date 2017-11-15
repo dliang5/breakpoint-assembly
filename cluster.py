@@ -5,7 +5,12 @@ import sys, copy
     input : samfile (ex. 857.sam)
     output : good_<sam>-result summary_<sam>-result (ex. good_857-result summary_857-result)
 
+    this file will scan through a SAM file and create a 2D list for each chromosome up to the nth time.
+    It then merges any similar clusters to avoid overfilling the output files with too much 
+    results. There are 8 samflags hardcoded: 
 
+    for1 = [65, 129, 2161, 2225] 
+    rev1 = [113, 177, 2113, 2177] 
 
 """
 """ background information and assumption:
@@ -57,6 +62,7 @@ def search(tmpList, entry, minCluster):
                 i.append(entry) 
                 inCluster = True
     return inRange, tmpList
+
 # prints out the breakpoints 
 def printCluster(forward, reverse, writeFile):
     for cForward in forward:
@@ -85,7 +91,8 @@ def printCluster(forward, reverse, writeFile):
                                     writeFile.write(text+"\n")                         
                                 writeFile.write("\n")
                                 break 
-# prints out the breakpoints 
+
+# prints out the summaries 
 def printSum(forward, reverse, writeFile):
     for cForward in forward:
         for f in range(len(cForward)): 
@@ -125,6 +132,7 @@ def printSum(forward, reverse, writeFile):
                        
                                 writeFile.write("\n")
                                 break 
+
 # helper function for merging, creates a dictionary that checks for twice occurence and count it 
 # then it checks the number of twice against half of total to see if it should merge 
 def duplicate1(clist1, clist2): 
@@ -203,14 +211,18 @@ def main():
     chrom_counter = 0
     forList = []
     revList = []
+
     with open(readFile, 'r') as f: 
         for line in f: 
             content = line.split('\t')
+
             if content[0] == "@SQ" : continue 
             if len(content) < 8: continue 
             if int(content[4]) < 20 or content[6] != "=": continue 
+
             entry = location(content[0], content[1], content[2], content[3],\
                             content[4], content[6], content[7])
+
             if abs(entry.getPos1() - entry.getPos2()) <= 1000000 or (entry.getPos1() - entry.getPos2()) < 0: 
                 continue 
             
@@ -260,8 +272,6 @@ def main():
     writeFile.flush()
     writeFile.close()
     print("done with clustering") 
-              
-
-            
+                          
 if __name__ == "__main__": 
     main() 
