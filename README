@@ -1,6 +1,6 @@
 Everything outside of the folders are the tools needed to cluster. 
 1. cluster.py (and reading3_1.cpp once it's fixed) are the files that cluster reads
-    1.a) virutually does the same thing
+    1.a) virutually does the same thing (reading3_1.cpp and cluster.py)
 2. search_trans.py - post processing for dmel files and matches TE with the breakpoints to ensure more positive inversions
 3. fastq2fa_qual.pl and parse_reads.pl - converts fastq to fasta and quality and parse the ID. 
 4. running3-1.sh - is how I ran the entire program save for phrap assembly to not waste space. 

@@ -193,6 +193,7 @@ def merging(superSet):
          
 # the first half of main can be used as a function 
 # this runs the entire program of the cluster algorithm 
+# ////TODO: work with multiple sam files and produce them out in one go.
 def main(): 
     readFile = sys.argv[1] # samfile to be read 
     if (".sam" not in sys.argv[1]): 
