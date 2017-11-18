@@ -76,94 +76,97 @@ name = str(sys.argv).split(" ")  # would need to change this and allow multiple 
 # then read in everything of the entire line - class - then compare only the first and second locations 
 #                   ----> check to see if it is within the range tho.  
 """ 
-te_objects = []  # holds TE elements in class 
-break_objects = []  # holds cluster in class 
+
+for args in range(1, len(sys.argv)): 
+    name = sys.argv[args] # getting the args here
+    te_objects = []  # holds TE elements in class 
+    break_objects = []  # holds cluster in class 
 
 
-# getting the value of the TE here 
-with open("TE_sites.txt", "r") as f: 
-    for line in f: 
-        content = line.split() 
-        decoy = location( content[0], int(content[3]), int(content[4]) )
-        # print "this is the current counter after each line " + str(decoy.getSize())
-        te_objects.append(decoy)   
-
-
-# the idea is to store the breakpoints into their own separate list
-# to make it easier to print and compare them.
-
-break_store = [] # this will hold a list of classes 
-check_sum = 0 
-summaryResults = "summary_"+name[1].lstrip("'").rstrip("']")+"-result" 
-# summary_857-result 
-with open(summaryResults, "r") as f: 
-    for line in f: 
-        # if there's an empty line as seen in the summary file, then it breaks into another list.
-        if line in ['\n', '\r\n']:
-            break_store.append(break_objects)
-            break_objects = [] 
-            check_sum += 1 
-        else: 
+    # getting the value of the TE here 
+    with open("TE_sites.txt", "r") as f: 
+        for line in f: 
             content = line.split() 
-            decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
-            break_objects.append(decoy) 
+            decoy = location( content[0], int(content[3]), int(content[4]) )
+            # print "this is the current counter after each line " + str(decoy.getSize())
+            te_objects.append(decoy)   
 
-# if there's only one cluster so it will never go through the other one
-# because there's no newline 
-if check_sum == 0 : 
-    break_store.append(break_objects)
 
-"""
-# searches and compare the TE element with the cluster and see if it is close
-# if one part matches then count, if at least like 50 - 80 % matches then add it to the list
-"""
-isTE = [] # clusters that did not pass the TE elements 
-notTE = [] # clusters that did pass the TE elements 
+    # the idea is to store the breakpoints into their own separate list
+    # to make it easier to print and compare them.
 
-counter = 0 # this is to keep track of the number of reads within TE at least 80% 
-checklist = False 
-for index, cur_list in enumerate(break_store): # getting each individual list
+    break_store = [] # this will hold a list of classes 
+    check_sum = 0 
+    summaryResults = "summary_"+name+"-result" 
+    # summary_857-result 
+    with open(summaryResults, "r") as f: 
+        for line in f: 
+            # if there's an empty line as seen in the summary file, then it breaks into another list.
+            if line in ['\n', '\r\n']:
+                break_store.append(break_objects)
+                break_objects = [] 
+                check_sum += 1 
+            else: 
+                content = line.split() 
+                decoy = b_location( int(content[0]), int(content[1]), content[2], int(content[3]), int(content[4]), int(content[5]), int(content[6]), int(content[7]))
+                break_objects.append(decoy) 
 
-    in_transrange = False
-    for t_index, cur_breakpoint in enumerate(cur_list): # iterating individually through chosen list
+    # if there's only one cluster so it will never go through the other one
+    # because there's no newline 
+    if check_sum == 0 : 
+        break_store.append(break_objects)
 
-        in_transrange = False 
-        for te in te_objects:
-            if cur_breakpoint.getchrom_ref() == te.getchrom_ref(): # making sure the location is the same
-                if te.getposition1() <= cur_breakpoint.getlowposition1() <= te.getposition2() or te.getposition1() <= cur_breakpoint.gethighposition1() <= te.getposition2()\
-                 or te.getposition1() <= cur_breakpoint.getlowposition2() <= te.getposition2() or te.getposition1() <= cur_breakpoint.gethighposition2() <= te.getposition2():
-                    in_transrange = True
-                    break
-        if (in_transrange == True):
-            isTE.append(cur_list)
-            break 
-    if in_transrange == False:
-        notTE.append(cur_list)
+    """
+    # searches and compare the TE element with the cluster and see if it is close
+    # if one part matches then count, if at least like 50 - 80 % matches then add it to the list
+    """
+    isTE = [] # clusters that did not pass the TE elements 
+    notTE = [] # clusters that did pass the TE elements 
 
-summarySam = "summary_"+name[1].lstrip("'").rstrip("']")+"-breakpoints"
-# printing a new summary file here
-with open(summarySam, 'w' ) as wf: 
-    for breakpoints in notTE:
-        for index in breakpoints:
-            wf.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format( index.getsamflag(), index.getchrom_ref(), index.getlowposition1(), 
-                                    index.getlowposition2(), index.gethighposition1(), index.gethighposition2(), index.getSize() ))
-        wf.write("\n")
-goodReadFile = "good_"+name[1].lstrip("'").rstrip("']")+"-result" # ex. good_857-result
-detailedBreakpoints = "good_"+name[1].lstrip("'").rstrip("']")+"-breakpoints" # 857-result is the most important file in here
-writeDetailedBreakpoints = open(detailedBreakpoints, 'w')
+    counter = 0 # this is to keep track of the number of reads within TE at least 80% 
+    checklist = False 
+    for index, cur_list in enumerate(break_store): # getting each individual list
 
-# this is opening good_<SRR>-results which is has the full info on the clusters
+        in_transrange = False
+        for t_index, cur_breakpoint in enumerate(cur_list): # iterating individually through chosen list
 
-with open(goodReadFile) as f:
-    for line in f:
-        content = [x.strip() for x in line.split("\t")]
-        if len(content) != 7: # to avoid getting an error for index out of range due to the empty line separating them? 
-            writeDetailedBreakpoints.write("\n")
-            continue
+            in_transrange = False 
+            for te in te_objects:
+                if cur_breakpoint.getchrom_ref() == te.getchrom_ref(): # making sure the location is the same
+                    if te.getposition1() <= cur_breakpoint.getlowposition1() <= te.getposition2() or te.getposition1() <= cur_breakpoint.gethighposition1() <= te.getposition2()\
+                    or te.getposition1() <= cur_breakpoint.getlowposition2() <= te.getposition2() or te.getposition1() <= cur_breakpoint.gethighposition2() <= te.getposition2():
+                        in_transrange = True
+                        break
+            if (in_transrange == True):
+                isTE.append(cur_list)
+                break 
+        if in_transrange == False:
+            notTE.append(cur_list)
 
-        for i in notTE: 
-            for j in i: 
-                if content[0] == str( j.getindex() ): 
-                    writeDetailedBreakpoints.write(line)
-                    break                      
-                
+    summarySam = "summary_"+name+"-breakpoints"
+    # printing a new summary file here
+    with open(summarySam, 'w' ) as wf: 
+        for breakpoints in notTE:
+            for index in breakpoints:
+                wf.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format( index.getsamflag(), index.getchrom_ref(), index.getlowposition1(), 
+                                        index.getlowposition2(), index.gethighposition1(), index.gethighposition2(), index.getSize() ))
+            wf.write("\n")
+    goodReadFile = "good_"+name+"-result" # ex. good_857-result
+    detailedBreakpoints = "good_"+ name +"-breakpoints" # 857-result is the most important file in here
+    writeDetailedBreakpoints = open(detailedBreakpoints, 'w')
+
+    # this is opening good_<SRR>-results which is has the full info on the clusters
+
+    with open(goodReadFile) as f:
+        for line in f:
+            content = [x.strip() for x in line.split("\t")]
+            if len(content) != 7: # to avoid getting an error for index out of range due to the empty line separating them? 
+                writeDetailedBreakpoints.write("\n")
+                continue
+
+            for i in notTE: 
+                for j in i: 
+                    if content[0] == str( j.getindex() ): 
+                        writeDetailedBreakpoints.write(line)
+                        break                      
+                    
