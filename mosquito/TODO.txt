@@ -1,0 +1,11 @@
+What to do for this folder and research today in general : TODO: 
+
+1. finish the pipeline and make sure it actually works fine here 
+2. get all of the cluster numbering for Russ and what not 
+3. then work on the mosquito project and understand any questions i would need to ask
+
+how to make the pipeline work? 
+1. use python for file reading or args but file reading first (this is for ERS)
+2. it runs into the assembly.slurm file up to the clustering part 
+3. then python to read another file and run the other assembly for the actual breakpoint 
+4. then i should be done and confirm it from there

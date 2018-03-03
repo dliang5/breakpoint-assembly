@@ -77,7 +77,7 @@ def printCluster(forward, reverse, writeFile):
                         if len(cReverse[r]) > 4: 
                             rstrand1 = cReverse[r][0].getPos1() 
                             rstrand2 = cReverse[r][0].getPos2() 
-                            if ( abs(fstrand1 - rstrand1) < 30000 and abs(fstrand2 - rstrand2) < 30000): 
+                            if ( abs(fstrand1 - rstrand1) < 100000 and abs(fstrand2 - rstrand2) < 100000): 
                                 fsize = len(cForward[f])
                                 rsize = len(cReverse[r]) 
                                 biggest = 0 
@@ -106,7 +106,7 @@ def printSum(forward, reverse, writeFile):
                         if len(cReverse[r]) > 4: 
                             rstrand1 = cReverse[r][0].getPos1() 
                             rstrand2 = cReverse[r][0].getPos2() 
-                            if ( abs(fstrand1 - rstrand1) < 30000 and abs(fstrand2 - rstrand2) < 30000): 
+                            if ( abs(fstrand1 - rstrand1) < 100000 and abs(fstrand2 - rstrand2) < 100000): 
                                 fsize = len(cForward[f])
                                 rsize = len(cReverse[r]) 
                                 biggest = 0 
