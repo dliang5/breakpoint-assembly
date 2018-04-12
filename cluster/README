@@ -1,9 +1,0 @@
-# to run this program and the script file in general 
-1. There are files called running3-1.sh and running3.sh, they both run the entire problem from 
-   breakpoint detection and eventually phrap.
-3. fastq-dump --gzip -- split SRRname 
-4. bwa mem chrom_ref fastq_1 fastq_1 - > SRR.bam or 
-4.b) bwa mem chrom_ref fastq_1 fastq_2 | samtools -h -o SRR.sam 
-5. cluster creation - > g++ reading3.cpp -o reading && ./reading SRR.sam
-6. python2.7 transposeable.py 
-7. 
