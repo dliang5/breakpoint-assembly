@@ -9,7 +9,7 @@
 
 4. running3-1.sh - is how I ran the entire program save for phrap assembly to not waste space. 
 
-##How some programs are ran for individual purposes: 
+## How some programs are ran for individual purposes: 
 
 1. ```python2.7 or python3 cluster.py < *.sam > (ex. python3 cluster.py < 857.sam > )```
    output : good_<*>-result - full view of the clusters with both forward and reverse clusters 
@@ -28,7 +28,7 @@
 
 
 
-##3rd Party tools and Assumptions: 
+## 3rd Party tools and Assumptions: 
 1. fastq-dump 
 2. bwa mem
 3. phrap - phrap -vector_bound 0 -forcelevel 10 $fasta_name (quality file has to be of the same name) 
