@@ -2,14 +2,20 @@
 #SBATCH--job-name=script 
 #SBATCH--ntasks=3
 #SBATCH--output=file_name.out
-# run : sbatch align.sh readfile 
-# this is just to download and align files that's all up to bam file.
 # it reads in a list of the SRR/ERR names from Drosophila Nexus 
 
 :' DISCLAIMER: this assumes bwa index <ref.fa> has been ran
                <chrom_ref> is the output of bwa index <ref.fa> 
-'
 
+    This one checks out Drosophila Nexus spreadsheet. It has two 
+    control transfers with one being for single SRR/ERR and the 
+    other being for multiple SRR/ERR. They are combined in this 
+    case due to samtools merge. 
+
+    # run : sbatch align.sh readfile 
+    # this is just to download and align files thats all up to bam file.
+
+'
 # reads the file in the command line args 
 while IFS='' read -r line|| [[ -n "$line" ]]; do
     # echo "text from file " $line
